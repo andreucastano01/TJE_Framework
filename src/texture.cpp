@@ -132,6 +132,56 @@ void Texture::create3D(unsigned int width, unsigned int height, unsigned int dep
 	upload3D(format, type, mipmaps, data, internal_format);
 }
 
+void Texture::uploadCubemap(unsigned int format, unsigned int t, bool mips, Uint8** data, unsigned int intFormat, int level) {
+
+	assert(texture_id && "Must create texture before uploading data.");
+	assert(texture_type == GL_TEXTURE_CUBE_MAP && "Texture type does not match.");
+	//assert(glGetError() == GL_NO_ERROR);
+
+	glBindTexture(this->texture_type, texture_id);	//we activate this id to tell opengl we are going to use this texture
+
+	int w = ((int)this->width) >> level;
+	int h = ((int)this->height) >> level;
+
+	if (intFormat == 0)
+	{
+		if (type == GL_FLOAT)
+			intFormat = format == GL_RGB ? GL_RGB32F : GL_RGBA32F;
+		else
+			if (type == GL_HALF_FLOAT)
+				intFormat = format == GL_RGB ? GL_RGB16F : GL_RGBA16F;
+			else
+				if (type == GL_UNSIGNED_BYTE)
+					intFormat = format == GL_RGB ? GL_RGB : GL_RGBA;
+		this->internal_format = intFormat;
+	}
+
+	for (int i = 0; i < 6; i++)
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, level, internal_format == 0 ? format : internal_format, w, h, 0, format, t, data ? data[i] : NULL);
+
+	glTexParameteri(this->texture_type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(this->texture_type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	bool bAllowMips = true;
+
+	/*if (t == GL_HALF_FLOAT)
+	{
+		short *s = (short *)data[0];
+		printf("Env Data %d, Mip: %d: [%.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n", texture_id, level, r3dHalfToFloat(s[0]), r3dHalfToFloat(s[1]), r3dHalfToFloat(s[2]), r3dHalfToFloat(s[3]), r3dHalfToFloat(s[4]), r3dHalfToFloat(s[5]), r3dHalfToFloat(s[6]), r3dHalfToFloat(s[7]));
+	}*/
+
+	if (level == 0)
+	{
+		glTexParameteri(this->texture_type, GL_TEXTURE_MAG_FILTER, Texture::default_mag_filter);	//set the min filter
+		glTexParameteri(this->texture_type, GL_TEXTURE_MIN_FILTER, this->mipmaps ? Texture::default_min_filter : GL_LINEAR);   //set the mag filter
+		//if (data && this->mipmaps && level == 0 && bAllowMips)
+		//	generateMipmaps();
+	}
+
+	glBindTexture(this->texture_type, 0);
+	assert(glGetError() == GL_NO_ERROR && "Error creating texture");
+}
+
 void Texture::createCubemap(unsigned int width, unsigned int height, Uint8** data, unsigned int format, unsigned int type, bool mipmaps, unsigned int internal_format)
 {
 	assert(width && height && "texture must have a size");
