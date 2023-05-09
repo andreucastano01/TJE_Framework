@@ -1,3 +1,4 @@
+#version 130
 in vec3 v_world_position;
 
 uniform samplerCube u_texture;

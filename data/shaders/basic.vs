@@ -1,3 +1,5 @@
+#version 130
+
 attribute vec3 a_vertex;
 attribute vec3 a_normal;
 attribute vec2 a_uv;
