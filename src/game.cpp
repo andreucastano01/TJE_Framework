@@ -79,11 +79,11 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 	// example of loading Mesh from Mesh Manager
 	//mesh = Mesh::Get("data/track.obj");
 	PrefabEntity* track = new PrefabEntity(Vector3(1, 1, 1), "data/track.obj", "data/grass.png");
-	entities.push_back(track);
+	entities.push_back((Entity*)track);
 
 	//De momento da el pego
 	PrefabEntity* car = new PrefabEntity(Vector3(1, 3, 1), "data/car.obj", "data/Image_13.png");
-	entities.push_back(car);
+	entities.push_back((Entity*)car);
 	camera->center = Vector3(1, 3, 1);
 
 	// example of shader loading using the shaders manager
@@ -145,7 +145,7 @@ void Game::render(void)
 	if(shader)
 	{
 		for (int i = 0; i < entities.size(); i++) {
-			PrefabEntity* entity = entities[i];
+			PrefabEntity* entity = (PrefabEntity*)entities[i];
 			//enable shader
 			shader->enable();
 

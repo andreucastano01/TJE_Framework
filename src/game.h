@@ -27,7 +27,7 @@ public:
 	int fps;
 	bool must_exit;
 
-	std::vector<PrefabEntity*> entities;
+	std::vector<Entity*> entities;
 
 	//some vars
 	Camera* camera; //our global camera
