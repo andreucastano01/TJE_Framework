@@ -76,6 +76,9 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 	texture = new Texture();
  	//texture->load("data/texture.tga");
 
+	main_scene = PlayScene();
+	main_scene.setupScene();
+
 	// example of loading Mesh from Mesh Manager
 	//mesh = Mesh::Get("data/track.obj");
 	PrefabEntity* track = new PrefabEntity(Vector3(1, 1, 1), "data/track.obj", "data/grass.png");
