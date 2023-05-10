@@ -8,6 +8,7 @@
 #include "includes.h"
 #include "camera.h"
 #include "utils.h"
+#include "entity.h"
 
 class Game
 {
@@ -25,6 +26,8 @@ public:
 	float elapsed_time;
 	int fps;
 	bool must_exit;
+
+	std::vector<PrefabEntity*> entities;
 
 	//some vars
 	Camera* camera; //our global camera
