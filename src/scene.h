@@ -20,9 +20,11 @@ public:
 	PrefabEntity* player;
 	PrefabEntity* track;
 	Shader* shader;
+	Texture* skybox;
 
 	PlayScene();
 
+	void generateSkybox(Camera* camera);
 	void setupScene(int window_width, int window_height);
 	void renderScene(Camera* camera);
 	void update(float dt);
