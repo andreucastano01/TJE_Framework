@@ -29,7 +29,8 @@ public:
 	bool must_exit;
 
 	std::vector<Entity*> entities;
-	PlayScene main_scene;
+	Scene* current_scene;
+	PlayScene* play_scene;
 
 	//some vars
 	Camera* camera; //our global camera

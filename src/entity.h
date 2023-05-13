@@ -1,11 +1,11 @@
 #pragma once
-#include "framework.h"
+
 #include "texture.h"
 #include "mesh.h"
 
 class Entity {
 public:
-	Entity();
+	Entity(std::string name);
 
 	std::string name;
 	Matrix44 model;
@@ -16,13 +16,11 @@ public:
 	Matrix44 getGlobalMatrix();
 };
 
-class PrefabEntity : Entity {
+class PrefabEntity : public Entity {
 public:
 	Mesh* mesh;
 	Texture* texture;
-	Shader* shader;
 	Vector4 color;
 
-	PrefabEntity(Vector3 position, const char* meshf, const char* texturef, const char* vsf, const char* fsf, Vector4 color);
-	void render();
+	PrefabEntity(std::string name, Vector3 position, const char* meshf, const char* texturef, Vector4 color);
 };
