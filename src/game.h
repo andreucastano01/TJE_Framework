@@ -9,6 +9,7 @@
 #include "camera.h"
 #include "utils.h"
 #include "entity.h"
+#include "scene.h"
 
 class Game
 {
@@ -28,6 +29,8 @@ public:
 	bool must_exit;
 
 	std::vector<Entity*> entities;
+	Scene* current_scene;
+	PlayScene* play_scene;
 
 	//some vars
 	Camera* camera; //our global camera

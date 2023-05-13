@@ -1,10 +1,20 @@
 #include "entity.h"
+#include "camera.h"
+#include "shader.h"
 
-Entity::Entity() {
+Entity::Entity(std::string name) {
+	this->name = name;
 }
 
-PrefabEntity::PrefabEntity(Vector3 position, const char* meshf, const char* texturef) {
+Matrix44 Entity::getGlobalMatrix() {
+	return Matrix44();
+}
+
+
+PrefabEntity::PrefabEntity(std::string name, Vector3 position, const char* meshf, const char* texturef, Vector4 color) : Entity(name){
 	mesh = Mesh::Get(meshf);
 	if (texturef) texture = Texture::Get(texturef); else texture = new Texture();
-	this->position = position;
+	model.setTranslation(position.x, position.y, position.z);
+
+	this->color = color;
 }

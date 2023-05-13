@@ -76,18 +76,11 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 	texture = new Texture();
  	//texture->load("data/texture.tga");
 
-	// example of loading Mesh from Mesh Manager
-	//mesh = Mesh::Get("data/track.obj");
-	PrefabEntity* track = new PrefabEntity(Vector3(1, 1, 1), "data/track.obj", "data/grass.png");
-	entities.push_back((Entity*)track);
+	play_scene = new PlayScene();
+	play_scene -> setupScene(window_width, window_height);
+	current_scene = play_scene;
 
-	//De momento da el pego
-	PrefabEntity* car = new PrefabEntity(Vector3(1, 3, 1), "data/car.obj", "data/Image_13.png");
-	entities.push_back((Entity*)car);
 	camera->center = Vector3(1, 3, 1);
-
-	// example of shader loading using the shaders manager
-	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
 
 	skybox = CubemapFromHDRE("data/panorama.hdre");
 
@@ -134,41 +127,7 @@ void Game::render(void)
 
 	generateSkybox(camera);
 
-	//set flags
-	glDisable(GL_BLEND);
-	glEnable(GL_DEPTH_TEST);
-	glDisable(GL_CULL_FACE);
-   
-	//create model matrix for cube
-	Matrix44 m;
-
-	if(shader)
-	{
-		for (int i = 0; i < entities.size(); i++) {
-			PrefabEntity* entity = (PrefabEntity*)entities[i];
-			//enable shader
-			shader->enable();
-
-			//upload uniforms
-			shader->setUniform("u_color", Vector4(1, 1, 1, 1));
-			shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
-			shader->setUniform("u_texture", entity->texture, 0);
-			shader->setUniform("u_model", m);
-			shader->setUniform("u_time", time);
-
-			//do the draw call
-			entity->mesh->render(GL_TRIANGLES);
-
-			//disable shader
-			shader->disable();
-		}
-	}
-
-	//Draw the floor grid
-	//drawGrid();
-
-	//render the FPS, Draw Calls, etc
-	drawText(2, 2, getGPUStats(), Vector3(1, 1, 1), 2);
+	current_scene->renderScene(camera);
 
 	//swap between front buffer and back buffer
 	SDL_GL_SwapWindow(this->window);
