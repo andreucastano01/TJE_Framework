@@ -39,8 +39,9 @@ void PlayScene::setupScene(int window_width, int window_height) {
 
 	player = new PrefabEntity("car", Vector3(1, 3, 1), "data/car.obj", "data/Image_13.png", Vector4(1, 1, 1, 1));
 	prefab_entities.push_back(player);
-	track = new  PrefabEntity("track", Vector3(1, 1, 1), "data/track.obj", "data/grass.png", Vector4(1, 1, 1, 1));
+	track = new PrefabEntity("track", Vector3(1, 1, 1), "data/track.obj", "data/grass.png", Vector4(1, 1, 1, 1));
 	prefab_entities.push_back(track);
+	player = track;
 
 	skybox = CubemapFromHDRE("data/panorama.hdre");
 
