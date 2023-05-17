@@ -39,23 +39,11 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 	//load one texture without using the Texture Manager (Texture::Get would use the manager)
 	texture = new Texture();
  	//texture->load("data/texture.tga");
-
-	play_scene = new PlayScene();
+	camera = new Camera();
+	play_scene = new PlayScene(camera);
 	play_scene -> setupScene(window_width, window_height);
 	current_scene = play_scene;
 
-	Vector3 car_pos = play_scene->player->model.getTranslation();
-	//create our first person camera
-	/*
-	camera = new Camera();
-	camera->lookAt(Vector3(car_pos.x, car_pos.y + 3.6, car_pos.z), Vector3(car_pos.x, car_pos.y + 3.39, car_pos.z + 1), Vector3(0.f, 1.f, 0.f));
-	camera->setPerspective(70.f, window_width / (float)window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
-	*/
-
-	//create our third person camera
-	camera = new Camera();
-	camera->lookAt(Vector3(car_pos.x, car_pos.y + 6, car_pos.z - 7), Vector3(car_pos.x, car_pos.y + 6, car_pos.z + 1), Vector3(0.f, 1.f, 0.f));
-	camera->setPerspective(70.f, window_width / (float)window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
 
 	//hide the cursor
 	SDL_ShowCursor(!mouse_locked); //hide or show the mouse
@@ -73,7 +61,7 @@ void Game::render(void)
 	//set the camera as default
 	camera->enable();
 
-	current_scene->renderScene(camera);
+	current_scene->renderScene();
 
 	//swap between front buffer and back buffer
 	SDL_GL_SwapWindow(this->window);
@@ -81,7 +69,7 @@ void Game::render(void)
 
 void Game::update(double seconds_elapsed)
 {
-	current_scene->update(elapsed_time, camera);
+	current_scene->update(elapsed_time);
 	
 }
 

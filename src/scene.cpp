@@ -3,12 +3,20 @@
 #include "extra\hdre.h"
 #include "input.h"
 
-PlayScene::PlayScene() {
+Scene::Scene(Camera* camera) {
+	this->camera = camera;
+
+};
+
+PlayScene::PlayScene(Camera* camera) : Scene(camera) {
 	prefab_entities = std::vector<PrefabEntity*>();
-	player = nullptr;
+	car = nullptr;
+	track = nullptr;
 	angle = 0;
 	mouse_speed = 10.0f;
 	mouse_locked = false;
+
+	
 }
 
 Texture* CubemapFromHDRE(const char* filename)
@@ -40,19 +48,30 @@ Texture* CubemapFromHDRE(const char* filename)
 
 void PlayScene::setupScene(int window_width, int window_height) {
 
-	player = new PrefabEntity("car", Vector3(1, 3, 1), "data/car.obj", "data/Image_13.png", Vector4(1, 1, 1, 1));
-	prefab_entities.push_back(player);
+	car = new CarEntity("car", Vector3(1, 3, 1), "data/car.obj", "data/Image_13.png", Vector4(1, 1, 1, 1),300.0,30.0,2.0,3.0,3.0);
+	prefab_entities.push_back(car);
 	track = new PrefabEntity("track", Vector3(1, 1, 1), "data/track.obj", "data/grass.png", Vector4(1, 1, 1, 1));
 	prefab_entities.push_back(track);
-	player = track;
 
 	skybox = CubemapFromHDRE("data/panorama.hdre");
 
 	// example of shader loading using the shaders manager
 	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
+
+	//create our first person camera
+	/*
+	camera = new Camera();
+	camera->lookAt(Vector3(car_pos.x, car_pos.y + 3.6, car_pos.z), Vector3(car_pos.x, car_pos.y + 3.39, car_pos.z + 1), Vector3(0.f, 1.f, 0.f));
+	camera->setPerspective(70.f, window_width / (float)window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
+	*/
+
+	//create our third person camera
+	Vector3 car_pos = car->model.getTranslation();
+	camera->lookAt(Vector3(car_pos.x, car_pos.y + 6, car_pos.z - 7), Vector3(car_pos.x, car_pos.y + 6, car_pos.z + 1), Vector3(0.f, 1.f, 0.f));
+	camera->setPerspective(70.f, window_width / (float)window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
 }
 
-void PlayScene::generateSkybox(Camera* camera) {
+void PlayScene::generateSkybox() {
 	Mesh* mesh = Mesh::Get("data/sphere.obj");
 	Shader* shader = Shader::Get("data/shaders/basic.vs", "data/shaders/skybox.fs");
 	shader->enable();
@@ -77,7 +96,7 @@ void PlayScene::generateSkybox(Camera* camera) {
 	glEnable(GL_DEPTH_TEST);
 }
 
-void PlayScene::renderScene(Camera* camera) {
+void PlayScene::renderScene() {
 	//set flags
 	glDisable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST);
@@ -86,7 +105,7 @@ void PlayScene::renderScene(Camera* camera) {
 	if (!shader)
 		return;
 
-	generateSkybox(camera);
+	generateSkybox();
 
 	for (PrefabEntity* entity : prefab_entities) {
 		//enable shader
@@ -122,11 +141,10 @@ void PlayScene::renderScene(Camera* camera) {
 
 }
 
-void PlayScene::update(float dt, Camera* camera) {
+void PlayScene::update(float dt) {
 	float speed = dt * mouse_speed; //the speed is defined by the seconds_elapsed so it goes constant
 
 	//example
-	angle += (float)dt * 10.0f;
 
 	//mouse input to rotate the cam
 	if ((Input::mouse_state & SDL_BUTTON_LEFT) || mouse_locked) //is left button pressed?
@@ -136,18 +154,16 @@ void PlayScene::update(float dt, Camera* camera) {
 	}
 	
 
-	Vector3 carPos = player->model.getTranslation();
+	Vector3 car_pos = car->model.getTranslation();
 	
-	
-	float angle = 0.0f;
 
 	//async input to move the camera around
 	if (Input::isKeyPressed(SDL_SCANCODE_LSHIFT)) speed *= 10; //move faster with left shift
 	if (Input::isKeyPressed(SDL_SCANCODE_W) || Input::isKeyPressed(SDL_SCANCODE_UP)) {
-		carPos.z -= speed * 3;
+		car_pos.z += speed * 3;
 	}
 	if (Input::isKeyPressed(SDL_SCANCODE_S) || Input::isKeyPressed(SDL_SCANCODE_DOWN)) {
-		carPos.z += speed * 3;
+		car_pos.z -= speed * 3;
 	}
 	if (Input::isKeyPressed(SDL_SCANCODE_A) || Input::isKeyPressed(SDL_SCANCODE_LEFT)) {
 		//camera->move(Vector3(1.0f, 0.0f, 0.0f) * speed);
@@ -155,11 +171,10 @@ void PlayScene::update(float dt, Camera* camera) {
 	if (Input::isKeyPressed(SDL_SCANCODE_D) || Input::isKeyPressed(SDL_SCANCODE_RIGHT)) {
 		//camera->move(Vector3(-1.0f, 0.0f, 0.0f) * speed);
 	}
-
 	
-	player->model.setTranslation(carPos.x, carPos.y, carPos.z);
+	car->model.setTranslation(car_pos.x, car_pos.y, car_pos.z);
 			//entity->model.rotate(angle, Vector3(0.0, 1.0, 0.0));
-	
+	camera->lookAt(Vector3(car_pos.x, car_pos.y + 6, car_pos.z - 7), Vector3(car_pos.x, car_pos.y + 6, car_pos.z + 1), Vector3(0.f, 1.f, 0.f));
 	//to navigate with the mouse fixed in the middle
 	if (mouse_locked)
 		Input::centerMouse();

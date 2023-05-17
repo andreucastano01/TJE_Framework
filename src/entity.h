@@ -24,3 +24,20 @@ public:
 
 	PrefabEntity(std::string name, Vector3 position, const char* meshf, const char* texturef, Vector4 color);
 };
+
+class CarEntity : public PrefabEntity {
+public:
+	
+	float speed;
+	float acceleration;
+	float angle;
+
+	CarEntity(std::string name, Vector3 position, const char* meshf, const char* texturef, Vector4 color, float max_speed, float max_angle, float max_acceleration, float max_breacking, float downforce);
+
+private:
+	float max_speed;
+	float max_angle;
+	float max_acceleration;
+	float max_breacking;
+	float downforce;
+};
