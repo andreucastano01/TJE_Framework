@@ -1,11 +1,14 @@
 #include "scene.h"
 #include "utils.h"
 #include "extra\hdre.h"
-
+#include "input.h"
 
 PlayScene::PlayScene() {
 	prefab_entities = std::vector<PrefabEntity*>();
 	player = nullptr;
+	angle = 0;
+	mouse_speed = 10.0f;
+	mouse_locked = false;
 }
 
 Texture* CubemapFromHDRE(const char* filename)
@@ -119,6 +122,45 @@ void PlayScene::renderScene(Camera* camera) {
 
 }
 
-void PlayScene::update(float dt) {
+void PlayScene::update(float dt, Camera* camera) {
+	float speed = dt * mouse_speed; //the speed is defined by the seconds_elapsed so it goes constant
 
+	//example
+	angle += (float)dt * 10.0f;
+
+	//mouse input to rotate the cam
+	if ((Input::mouse_state & SDL_BUTTON_LEFT) || mouse_locked) //is left button pressed?
+	{
+		camera->rotate(Input::mouse_delta.x * 0.005f, Vector3(0.0f, -1.0f, 0.0f));
+		camera->rotate(Input::mouse_delta.y * 0.005f, camera->getLocalVector(Vector3(-1.0f, 0.0f, 0.0f)));
+	}
+	
+
+	Vector3 carPos = player->model.getTranslation();
+	
+	
+	float angle = 0.0f;
+
+	//async input to move the camera around
+	if (Input::isKeyPressed(SDL_SCANCODE_LSHIFT)) speed *= 10; //move faster with left shift
+	if (Input::isKeyPressed(SDL_SCANCODE_W) || Input::isKeyPressed(SDL_SCANCODE_UP)) {
+		carPos.z -= speed * 3;
+	}
+	if (Input::isKeyPressed(SDL_SCANCODE_S) || Input::isKeyPressed(SDL_SCANCODE_DOWN)) {
+		carPos.z += speed * 3;
+	}
+	if (Input::isKeyPressed(SDL_SCANCODE_A) || Input::isKeyPressed(SDL_SCANCODE_LEFT)) {
+		//camera->move(Vector3(1.0f, 0.0f, 0.0f) * speed);
+	}
+	if (Input::isKeyPressed(SDL_SCANCODE_D) || Input::isKeyPressed(SDL_SCANCODE_RIGHT)) {
+		//camera->move(Vector3(-1.0f, 0.0f, 0.0f) * speed);
+	}
+
+	
+	player->model.setTranslation(carPos.x, carPos.y, carPos.z);
+			//entity->model.rotate(angle, Vector3(0.0, 1.0, 0.0));
+	
+	//to navigate with the mouse fixed in the middle
+	if (mouse_locked)
+		Input::centerMouse();
 }
