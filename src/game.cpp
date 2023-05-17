@@ -14,8 +14,6 @@ Mesh* mesh = NULL;
 Texture* texture = NULL;
 Shader* shader = NULL;
 Animation* anim = NULL;
-float angle = 0;
-float mouse_speed = 10.0f;
 FBO* fbo = NULL;
 
 Game* Game::instance = NULL;
@@ -41,23 +39,11 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 	//load one texture without using the Texture Manager (Texture::Get would use the manager)
 	texture = new Texture();
  	//texture->load("data/texture.tga");
-
-	play_scene = new PlayScene();
+	camera = new Camera();
+	play_scene = new PlayScene(camera);
 	play_scene -> setupScene(window_width, window_height);
 	current_scene = play_scene;
 
-	Vector3 car_pos = play_scene->player->model.getTranslation();
-	//create our first person camera
-	/*
-	camera = new Camera();
-	camera->lookAt(Vector3(car_pos.x, car_pos.y + 3.6, car_pos.z), Vector3(car_pos.x, car_pos.y + 3.39, car_pos.z + 1), Vector3(0.f, 1.f, 0.f));
-	camera->setPerspective(70.f, window_width / (float)window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
-	*/
-
-	//create our third person camera
-	camera = new Camera();
-	camera->lookAt(Vector3(car_pos.x, car_pos.y + 6, car_pos.z - 7), Vector3(car_pos.x, car_pos.y + 6, car_pos.z + 1), Vector3(0.f, 1.f, 0.f));
-	camera->setPerspective(70.f, window_width / (float)window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
 
 	//hide the cursor
 	SDL_ShowCursor(!mouse_locked); //hide or show the mouse
@@ -75,7 +61,7 @@ void Game::render(void)
 	//set the camera as default
 	camera->enable();
 
-	current_scene->renderScene(camera);
+	current_scene->renderScene();
 
 	//swap between front buffer and back buffer
 	SDL_GL_SwapWindow(this->window);
@@ -83,51 +69,8 @@ void Game::render(void)
 
 void Game::update(double seconds_elapsed)
 {
-	float speed = seconds_elapsed * mouse_speed; //the speed is defined by the seconds_elapsed so it goes constant
-
-	//example
-	angle += (float)seconds_elapsed * 10.0f;
-
-	//mouse input to rotate the cam
-	if ((Input::mouse_state & SDL_BUTTON_LEFT) || mouse_locked ) //is left button pressed?
-	{
-		camera->rotate(Input::mouse_delta.x * 0.005f, Vector3(0.0f,-1.0f,0.0f));
-		camera->rotate(Input::mouse_delta.y * 0.005f, camera->getLocalVector( Vector3(-1.0f,0.0f,0.0f)));
-	}
-
-	Vector3 carPos;
-	for (PrefabEntity* entity : play_scene->prefab_entities) {
-		if (entity->name.compare("car")) {
-			carPos = entity->model.getTranslation();
-		}
-	}
-	float angle = 0.0f;
-
-	//async input to move the camera around
-	if(Input::isKeyPressed(SDL_SCANCODE_LSHIFT) ) speed *= 10; //move faster with left shift
-	if (Input::isKeyPressed(SDL_SCANCODE_W) || Input::isKeyPressed(SDL_SCANCODE_UP)) {
-		carPos.z -= speed * 3;
-	}
-	if (Input::isKeyPressed(SDL_SCANCODE_S) || Input::isKeyPressed(SDL_SCANCODE_DOWN)) {
-		carPos.z += speed * 3;
-	}
-	if (Input::isKeyPressed(SDL_SCANCODE_A) || Input::isKeyPressed(SDL_SCANCODE_LEFT)) {
-		camera->move(Vector3(1.0f, 0.0f, 0.0f) * speed);
-	}
-	if (Input::isKeyPressed(SDL_SCANCODE_D) || Input::isKeyPressed(SDL_SCANCODE_RIGHT)) {
-		camera->move(Vector3(-1.0f, 0.0f, 0.0f) * speed);
-	}
-
-	for (PrefabEntity* entity : play_scene->prefab_entities) {
-		if (entity->name.compare("car")) {
-			entity->model.setTranslation(carPos.x, carPos.y, carPos.z);
-			//entity->model.rotate(angle, Vector3(0.0, 1.0, 0.0));
-		}
-
-	}
-	//to navigate with the mouse fixed in the middle
-	if (mouse_locked)
-		Input::centerMouse();
+	current_scene->update(elapsed_time);
+	
 }
 
 //Keyboard event handler (sync input)
@@ -139,7 +82,7 @@ void Game::onKeyDown( SDL_KeyboardEvent event )
 		case SDLK_F1: Shader::ReloadAll(); break; 
 	}
 }
-
+//TODO maybe add this to scene?
 void Game::onKeyUp(SDL_KeyboardEvent event)
 {
 }
@@ -169,7 +112,7 @@ void Game::onMouseButtonUp(SDL_MouseButtonEvent event)
 
 void Game::onMouseWheel(SDL_MouseWheelEvent event)
 {
-	mouse_speed *= event.y > 0 ? 1.1 : 0.9;
+	//mouse_speed *= event.y > 0 ? 1.1 : 0.9;
 }
 
 void Game::onResize(int width, int height)
