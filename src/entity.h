@@ -20,9 +20,10 @@ class PrefabEntity : public Entity {
 public:
 	Mesh* mesh;
 	Texture* texture;
+	Shader* shader;
 	Vector4 color;
 
-	PrefabEntity(std::string name, Vector3 position, const char* meshf, const char* texturef, Vector4 color);
+	PrefabEntity(std::string name, Vector3 position, const char* meshf, const char* texturef, Shader* shader);
 };
 
 class CarEntity : public PrefabEntity {
@@ -31,7 +32,7 @@ public:
 	float speed;
 	float angle;
 	
-	CarEntity(std::string name, Vector3 position, const char* meshf, const char* texturef, Vector4 color, float max_speed, float max_angle, float max_acceleration, float max_breacking, float downforce, float rotation_speed);
+	CarEntity(std::string name, Vector3 position, const char* meshf, const char* texturef, Shader* shader, float max_speed, float max_angle, float max_acceleration, float max_breacking, float downforce, float rotation_speed);
 	//direction: +1 accel forward -1 brake 0 no acceleration
 	//turn: +1 Turn left -1 Trun Right 0 no turn
 	void move(int direction, int turn, float dt);

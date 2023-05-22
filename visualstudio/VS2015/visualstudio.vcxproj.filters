@@ -66,6 +66,7 @@
     </ClCompile>
     <ClCompile Include="..\..\src\entity.cpp" />
     <ClCompile Include="..\..\src\scene.cpp" />
+    <ClCompile Include="..\..\src\parseScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\camera.h" />

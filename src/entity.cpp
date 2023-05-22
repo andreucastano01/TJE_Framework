@@ -11,16 +11,14 @@ Matrix44 Entity::getGlobalMatrix() {
 }
 
 
-PrefabEntity::PrefabEntity(std::string name, Vector3 position, const char* meshf, const char* texturef, Vector4 color) : Entity(name){
+PrefabEntity::PrefabEntity(std::string name, Vector3 position, const char* meshf, const char* texturef, Shader* shader) : Entity(name){
 	mesh = Mesh::Get(meshf);
 	if (texturef) texture = Texture::Get(texturef); else texture = new Texture();
 	model.setTranslation(position.x, position.y, position.z);
-
-	this->color = color;
 }
 
-CarEntity::CarEntity(std::string name, Vector3 position, const char* meshf, const char* texturef, Vector4 color, 
-	float max_speed, float max_angle, float max_acceleration, float max_breacking, float downforce, float rotation_speed) : PrefabEntity(name, position, meshf, texturef, color) {
+CarEntity::CarEntity(std::string name, Vector3 position, const char* meshf, const char* texturef, Shader* shader,
+	float max_speed, float max_angle, float max_acceleration, float max_breacking, float downforce, float rotation_speed) : PrefabEntity(name, position, meshf, texturef, shader) {
 	this->max_speed = max_speed;
 	this->max_angle = max_angle;
 	this->max_acceleration = max_acceleration;

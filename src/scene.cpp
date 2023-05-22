@@ -45,12 +45,15 @@ Texture* CubemapFromHDRE(const char* filename)
 
 void PlayScene::setupScene(int window_width, int window_height) {
 
+	// example of shader loading using the shaders manager
+	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
+
 	car = new CarEntity(
 		"car", 
 		Vector3(1, 3, 1),
 		"data/car.obj", 
 		"data/Image_13.png", 
-		Vector4(1, 1, 1, 1),
+		shader,
 		30.0,
 		30.0,
 		2.5,
@@ -59,13 +62,11 @@ void PlayScene::setupScene(int window_width, int window_height) {
 		10.0
 	);
 	prefab_entities.push_back(car);
-	track = new PrefabEntity("track", Vector3(1, 1, 1), "data/track.obj", "data/grass.png", Vector4(1, 1, 1, 1));
+
+	track = new PrefabEntity("track", Vector3(1, 1, 1), "data/track.obj", "data/grass.png", shader);
 	prefab_entities.push_back(track);
 
 	skybox = CubemapFromHDRE("data/panorama.hdre");
-
-	// example of shader loading using the shaders manager
-	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
 
 	//create our first person camera
 	/*
