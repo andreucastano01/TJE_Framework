@@ -20,12 +20,13 @@ PrefabEntity::PrefabEntity(std::string name, Vector3 position, const char* meshf
 }
 
 CarEntity::CarEntity(std::string name, Vector3 position, const char* meshf, const char* texturef, Vector4 color, 
-	float max_speed, float rotation_speed, float max_acceleration, float max_breacking, float downforce) : PrefabEntity(name, position, meshf, texturef, color) {
+	float max_speed, float max_angle, float max_acceleration, float max_breacking, float downforce, float rotation_speed) : PrefabEntity(name, position, meshf, texturef, color) {
 	this->max_speed = max_speed;
-	this->rotation_speed = rotation_speed;
+	this->max_angle = max_angle;
 	this->max_acceleration = max_acceleration;
 	this->max_breacking = max_breacking;
 	this->downforce = downforce;
+	this->rotation_speed = rotation_speed;
 
 	speed = 0;
 	angle = 0;

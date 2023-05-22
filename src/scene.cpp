@@ -52,10 +52,11 @@ void PlayScene::setupScene(int window_width, int window_height) {
 		"data/Image_13.png", 
 		Vector4(1, 1, 1, 1),
 		30.0,
-		10.0,
+		30.0,
 		2.5,
 		3.5,
-		1.2
+		1.2,
+		10.0
 	);
 	prefab_entities.push_back(car);
 	track = new PrefabEntity("track", Vector3(1, 1, 1), "data/track.obj", "data/grass.png", Vector4(1, 1, 1, 1));
