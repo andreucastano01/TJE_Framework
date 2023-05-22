@@ -51,8 +51,8 @@ void PlayScene::setupScene(int window_width, int window_height) {
 		"data/car.obj", 
 		"data/Image_13.png", 
 		Vector4(1, 1, 1, 1),
-		7.0,
 		30.0,
+		10.0,
 		2.5,
 		3.5,
 		1.2
