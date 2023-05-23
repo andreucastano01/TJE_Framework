@@ -40,6 +40,7 @@ struct sMaterialInfo
 	Vector3 Ka;
 	Vector3 Kd;
 	Vector3 Ks;
+	float Ns;
 };
 
 class Mesh
