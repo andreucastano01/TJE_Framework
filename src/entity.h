@@ -52,6 +52,7 @@ public:
 	inline float getSpeed() { return speed; }
 	inline void goBackwards() { is_reversing = true; }
 	inline void goForwards() { is_reversing = false; }
+	inline std::string getGear() { return is_reversing ? "R": "1"; }
 
 private:
 	float max_speed;
