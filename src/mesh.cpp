@@ -1147,6 +1147,10 @@ bool Mesh::parseMTL(const char* filename)
 			parsingMaterial = true;
 			material_name = tokens[1];
 		}
+		else if (tokens[0] == "Ns")
+		{
+			info.Ns = (float)atof(tokens[1].c_str());
+		}
 	}
 
 	materials[material_name] = info;

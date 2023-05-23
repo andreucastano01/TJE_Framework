@@ -2,10 +2,11 @@
 #include "utils.h"
 #include "extra\hdre.h"
 #include "input.h"
+#include <fstream>
+#include <map>
 
 Scene::Scene(Camera* camera) {
 	this->camera = camera;
-
 };
 
 PlayScene::PlayScene(Camera* camera) : Scene(camera) {
@@ -43,38 +44,117 @@ Texture* CubemapFromHDRE(const char* filename)
 	return texture;
 }
 
+struct sRenderData {
+	Texture* texture = nullptr;
+	Shader* shader = nullptr;
+	std::vector<Matrix44> models;
+};
+
+Entity root;
+std::map<std::string, sRenderData> meshes_to_load;
+
+bool parseScene(const char* filename)
+{
+	// You could fill the map manually to add shader and texture for each mesh
+	// If the mesh is not in the map, you can use the MTL file to render its colors
+	// meshes_to_load["meshes/example.obj"] = { Texture::Get("texture.tga"), Shader::Get("shader.vs", "shader.fs") };
+
+	std::cout << " + Scene loading: " << filename << "..." << std::endl;
+
+	std::ifstream file(filename);
+
+	if (!file.good()) {
+		std::cerr << "Scene [ERROR]" << " File not found!" << std::endl;
+		return false;
+	}
+
+	std::string scene_info, mesh_name, model_data;
+	file >> scene_info; file >> scene_info;
+	int mesh_count = 0;
+
+	// Read file line by line and store mesh path and model info in separated variables
+	while (file >> mesh_name >> model_data)
+	{
+		// Get all 16 matrix floats
+		std::vector<std::string> tokens = tokenize(model_data, ",");
+
+		// Fill matrix converting chars to floats
+		Matrix44 model;
+		for (int t = 0; t < tokens.size(); ++t) {
+			model.m[t] = (float)atof(tokens[t].c_str());
+		}
+
+		// Add model to mesh list (might be instanced!)
+		sRenderData& render_data = meshes_to_load[mesh_name];
+		render_data.models.push_back(model);
+		mesh_count++;
+	}
+
+	
+	// Iterate through meshes loaded and create corresponding entities
+	for (auto data : meshes_to_load) {
+
+		mesh_name = "data/" + data.first;
+		sRenderData& render_data = data.second;
+
+		// No transforms, anything to do here
+		if (render_data.models.empty())
+			continue;
+
+		// Create instanced entity
+		if (render_data.models.size() > 1) {
+			//Esto deberia ser un instancedPrefabEntity o algo asi
+			PrefabEntity* new_entity = new PrefabEntity(mesh_name.c_str(), Mesh::Get(mesh_name.c_str()), render_data.shader, render_data.texture);
+			// Add all instances
+			//new_entity->models = render_data.models;
+			// Add entity to scene root
+			root.addChild(new_entity);
+		}
+		// Create normal entity
+		else {
+			PrefabEntity* new_entity = new PrefabEntity(mesh_name.c_str(), Mesh::Get(mesh_name.c_str()), render_data.shader, render_data.texture);
+			new_entity->model = render_data.models[0];
+			// Add entity to scene root
+			root.addChild(new_entity);
+		}
+	}
+
+	std::cout << "Scene [OK]" << " Meshes added: " << mesh_count << std::endl;
+	return true;
+}
+
 void PlayScene::setupScene(int window_width, int window_height) {
-
-	car = new CarEntity(
-		"car", 
-		Vector3(1, 3, 1),
-		"data/car.obj", 
-		"data/Image_13.png", 
-		Vector4(1, 1, 1, 1),
-		7.0,
-		30.0,
-		2.5,
-		3.5,
-		1.2
-	);
-	prefab_entities.push_back(car);
-	track = new PrefabEntity("track", Vector3(1, 1, 1), "data/track.obj", "data/grass.png", Vector4(1, 1, 1, 1));
-	prefab_entities.push_back(track);
-
-	skybox = CubemapFromHDRE("data/panorama.hdre");
 
 	// example of shader loading using the shaders manager
 	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
 
-	//create our first person camera
-	/*
-	camera = new Camera();
-	camera->lookAt(Vector3(car_pos.x, car_pos.y + 3.6, car_pos.z), Vector3(car_pos.x, car_pos.y + 3.39, car_pos.z + 1), Vector3(0.f, 1.f, 0.f));
-	camera->setPerspective(70.f, window_width / (float)window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
-	*/
+	car = new CarEntity(
+		"car", 
+		Vector3(200, 3, 500),
+		"data/car.obj", 
+		"data/Image_13.png", 
+		shader,
+		30.0,
+		30.0,
+		5.5,
+		3.5,
+		1.2,
+		10.0
+	);
+	prefab_entities.push_back(car);
 
-	//create our third person camera
+	track = new PrefabEntity("track", Vector3(1, 1, 1), "data/track.obj", "data/grass.png", shader);
+	prefab_entities.push_back(track);
+
+	skybox = CubemapFromHDRE("data/panorama.hdre");
+
 	Vector3 car_pos = car->model.getTranslation();
+
+	//create our first person camera
+	//camera->lookAt(Vector3(car_pos.x, car_pos.y + 3.6, car_pos.z), Vector3(car_pos.x, car_pos.y + 3.39, car_pos.z + 1), Vector3(0.f, 1.f, 0.f));
+	//camera->setPerspective(70.f, window_width / (float)window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
+
+	//create our third person camera	
 	camera->lookAt(Vector3(car_pos.x, car_pos.y + 6, car_pos.z - 7), Vector3(car_pos.x, car_pos.y + 6, car_pos.z + 1), Vector3(0.f, 1.f, 0.f));
 	camera->setPerspective(70.f, window_width / (float)window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
 }
@@ -129,8 +209,6 @@ void PlayScene::renderScene() {
 void PlayScene::update(float dt) {
 	float speed = dt * mouse_speed; //the speed is defined by the seconds_elapsed so it goes constant
 
-	//example
-
 	//mouse input to rotate the cam
 	if ((Input::mouse_state & SDL_BUTTON_LEFT) || mouse_locked) //is left button pressed?
 	{
@@ -156,7 +234,6 @@ void PlayScene::update(float dt) {
 		turn++;
 	}
 	if (Input::isKeyPressed(SDL_SCANCODE_D) || Input::isKeyPressed(SDL_SCANCODE_RIGHT)) {
-		//camera->move(Vector3(-1.0f, 0.0f, 0.0f) * speed);
 		turn--;
 	}
 	if (Input::isKeyPressed(SDL_SCANCODE_R) || Input::isKeyPressed(SDL_SCANCODE_RIGHT)) {
@@ -165,9 +242,8 @@ void PlayScene::update(float dt) {
 	if (Input::isKeyPressed(SDL_SCANCODE_F) || Input::isKeyPressed(SDL_SCANCODE_RIGHT)) {
 		car->goForwards();
 	}
-	car->move(dir, turn, dt);
-			//entity->model.rotate(angle, Vector3(0.0, 1.0, 0.0));
-	camera->lookAt(Vector3(car_pos.x, car_pos.y + 6, car_pos.z - 7), Vector3(car_pos.x, car_pos.y + 6, car_pos.z + 1), Vector3(0.f, 1.f, 0.f));
+	car->move(dir, turn, dt, camera);
+	//camera->lookAt(Vector3(car_pos.x, car_pos.y + 6, car_pos.z - 7), Vector3(car_pos.x, car_pos.y + 6, car_pos.z + 1), Vector3(0.f, 1.f, 0.f));
 	//to navigate with the mouse fixed in the middle
 	if (mouse_locked)
 		Input::centerMouse();
