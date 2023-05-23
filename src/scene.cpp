@@ -121,7 +121,9 @@ void PlayScene::renderScene() {
 
 	//render the FPS, Draw Calls, etc
 	drawText(2, 2, getGPUStats(), Vector3(1, 1, 1), 2);
-	drawText(100, 100, std::to_string(car->getSpeed()), Vector3(1, 1, 1), 2);
+	//TODO hacer que la velocidad se muestre en "KPH"
+	drawText(370, 550, std::to_string(car->getSpeed()), Vector3(1, 1, 1), 2);
+	drawText(370, 570, car->getGear(), Vector3(1, 1, 1), 2);
 }
 
 void PlayScene::update(float dt) {

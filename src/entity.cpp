@@ -26,6 +26,7 @@ CarEntity::CarEntity(std::string name, Vector3 position, const char* meshf, cons
 	this->max_acceleration = max_acceleration;
 	this->max_breacking = max_breacking;
 	this->downforce = downforce;
+	this->is_reversing = false;
 
 	speed = 0;
 	angle = 0;
@@ -34,6 +35,7 @@ CarEntity::CarEntity(std::string name, Vector3 position, const char* meshf, cons
 void CarEntity::move(int direction, int turn, float dt) {
 	//   forwards | backwards
 	Vector3 current_pos = model.getTranslation();
+	//if reversing make acceleation fo back and break go front
 	float flipSides = !is_reversing ? 1 : -1;
 	if (direction == 1 * flipSides) {
 		speed += max_acceleration * dt;
