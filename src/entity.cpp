@@ -45,7 +45,8 @@ PrefabEntity::PrefabEntity(std::string name, Vector3 position, const char* meshf
 PrefabEntity::PrefabEntity(std::string name, Mesh* mesh, Shader* shader, Texture* texture) : Entity(name) {
 	this->mesh = mesh;
 	this->shader = shader;
-	this->texture = texture;
+	if (texture) this->texture = texture;
+	else this->texture = new Texture();
 }
 
 void PrefabEntity::render(Camera* camera) {
@@ -59,11 +60,18 @@ void PrefabEntity::render(Camera* camera) {
 	if (camera->testSphereInFrustum(sphere_center, sphere_radius) == false)
 		return;
 
+	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/phongobj.fs");
+
 	//upload uniforms
 	shader->setUniform("u_color", Vector4(1, 1, 1, 1));
 	shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
 	shader->setUniform("u_texture", texture, 0);
 	shader->setUniform("u_model", model);
+	/*shader->setUniform("lightPos", Vector3(10, 10, 10));
+	shader->setUniform("Ia", 0.2f);
+	shader->setUniform("Kd", 0.9f);
+	shader->setUniform("Ks", 0.1f);
+	shader->setUniform("shininessVal", 1.0f);*/
 
 	//do the draw call
 	mesh->render(GL_TRIANGLES);
