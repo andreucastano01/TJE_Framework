@@ -7,14 +7,22 @@
 
 Texture* CubemapFromHDRE(const char* filename);
 
+struct sRenderData {
+	Texture* texture = nullptr;
+	Shader* shader = nullptr;
+	std::vector<Matrix44> models;
+};
+
 class Scene
 {
 public:
 	Camera* camera;
-
+	Entity* root;
+	std::map<std::string, sRenderData> meshes_to_load;
 	Scene(Camera* camera);
 	virtual void renderScene(){}
 	virtual void update(float dt){}
+	bool parseScene(const char* filename);
 };
 
 class PlayScene : public Scene 

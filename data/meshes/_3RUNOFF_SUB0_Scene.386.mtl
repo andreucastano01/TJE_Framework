@@ -1,0 +1,15 @@
+# Blender MTL File: 'track.blend'
+# Material Count: 1
+
+newmtl RunoffredMat
+Ns 199.999995
+Ka 1.000000 1.000000 1.000000
+Kd 0.727941 0.727941 0.727941
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump -bm 4.000000 C:\\Users\\charl\\Documents\\GitHub\\TJE_Framework\\data\\C:\\Users\\PC\\Documents\\GitHub\\New Unity Project\\Assets\\RealisticRaceTrack\\Materials\\NormalMap.png
+map_Kd C:\\Users\\charl\\Documents\\GitHub\\TJE_Framework\\data\\C:\\Users\\PC\\Documents\\GitHub\\New Unity Project\\Assets\\RealisticRaceTrack\\Materials\\runoffred.png
+map_d C:\\Users\\charl\\Documents\\GitHub\\TJE_Framework\\data\\C:\\Users\\PC\\Documents\\GitHub\\New Unity Project\\Assets\\RealisticRaceTrack\\Materials\\runoffred.png

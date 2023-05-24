@@ -7,6 +7,7 @@
 
 Scene::Scene(Camera* camera) {
 	this->camera = camera;
+	root = new Entity();
 };
 
 PlayScene::PlayScene(Camera* camera) : Scene(camera) {
@@ -18,17 +19,7 @@ PlayScene::PlayScene(Camera* camera) : Scene(camera) {
 	mouse_locked = false;
 }
 
-
-struct sRenderData {
-	Texture* texture = nullptr;
-	Shader* shader = nullptr;
-	std::vector<Matrix44> models;
-};
-
-Entity root;
-std::map<std::string, sRenderData> meshes_to_load;
-
-bool parseScene(const char* filename)
+bool Scene::parseScene(const char* filename)
 {
 	// You could fill the map manually to add shader and texture for each mesh
 	// If the mesh is not in the map, you can use the MTL file to render its colors
@@ -83,14 +74,14 @@ bool parseScene(const char* filename)
 			// Add all instances
 			//new_entity->models = render_data.models;
 			// Add entity to scene root
-			root.addChild(new_entity);
+			root->addChild(new_entity);
 		}
 		// Create normal entity
 		else {
 			PrefabEntity* new_entity = new PrefabEntity(mesh_name.c_str(), Mesh::Get(mesh_name.c_str()), render_data.shader, render_data.texture);
 			new_entity->model = render_data.models[0];
 			// Add entity to scene root
-			root.addChild(new_entity);
+			root->addChild(new_entity);
 		}
 	}
 
@@ -102,7 +93,7 @@ void PlayScene::setupScene(int window_width, int window_height) {
 
 	// example of shader loading using the shaders manager
 	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
-
+	parseScene("data/track.scene");
 	//speed values
 	sSpeedParameters sp = sSpeedParameters();
 	sp.max_speed = 50;

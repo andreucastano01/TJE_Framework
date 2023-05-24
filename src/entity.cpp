@@ -4,9 +4,11 @@
 
 Entity::Entity(std::string name) {
 	this->name = name;
+	parent = nullptr;
 }
 
 Entity::Entity() {
+	parent = nullptr;
 }
 
 Matrix44 Entity::getGlobalMatrix() {
@@ -17,7 +19,7 @@ Matrix44 Entity::getGlobalMatrix() {
 }
 
 void Entity::addChild(Entity* child) {
-	assert(child->parent == NULL);
+	assert(child->parent == nullptr);
 	children.push_back(child);
 	child->parent = this;
 }
