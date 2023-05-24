@@ -11,6 +11,14 @@ Entity::Entity() {
 	parent = nullptr;
 }
 
+void Entity::render(Camera* camera) {
+	for (int i = 0; i < children.size(); i++) {
+		//cast to prefab to render
+		PrefabEntity* ent = (PrefabEntity*)children[i];
+		ent->render(camera);
+	}	
+}
+
 Matrix44 Entity::getGlobalMatrix() {
 	if (parent)
 		return model * parent->getGlobalMatrix();
@@ -31,6 +39,7 @@ PrefabEntity::PrefabEntity(std::string name, Vector3 position, const char* meshf
 	mesh = Mesh::Get(meshf);
 	if (texturef) texture = Texture::Get(texturef); else texture = new Texture();
 	model.setTranslation(position.x, position.y, position.z);
+	this->shader = shader;
 }
 
 PrefabEntity::PrefabEntity(std::string name, Mesh* mesh, Shader* shader, Texture* texture) : Entity(name) {
@@ -39,12 +48,38 @@ PrefabEntity::PrefabEntity(std::string name, Mesh* mesh, Shader* shader, Texture
 	this->texture = texture;
 }
 
+void PrefabEntity::render(Camera* camera) {
+	shader->enable();
+
+	Vector3 sphere_center = model * mesh->box.center;
+	float sphere_radius = mesh->radius;
+
+	// Discard objects whose bounding sphere 
+	// is not inside the camera frustum
+	if (camera->testSphereInFrustum(sphere_center, sphere_radius) == false)
+		return;
+
+	//upload uniforms
+	shader->setUniform("u_color", Vector4(1, 1, 1, 1));
+	shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
+	shader->setUniform("u_texture", texture, 0);
+	shader->setUniform("u_model", model);
+
+	//do the draw call
+	mesh->render(GL_TRIANGLES);
+
+	//disable shader
+	shader->disable();
+	
+	for (int i = 0; i < children.size(); i++)
+		children[i]->render(camera);
+}
+
 CarEntity::CarEntity(std::string name, Vector3 position, const char* meshf, const char* texturef, Shader* shader, sSpeedParameters sp, sTurningParameters tp) : PrefabEntity(name, position, meshf, texturef, shader) {
 	speedParams = sp;
 	turnParams = tp;
 	
 	this->is_reversing = false;
-
 
 	speed = 0;
 	angle = 0;

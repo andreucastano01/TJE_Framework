@@ -36,8 +36,7 @@ public:
 
 	void addChild(Entity* child);
 	void removeChild(Entity* child);
-
-	virtual void render(){}
+	void render(Camera* camera);
 	virtual void update(float dt){}
 
 	Matrix44 getGlobalMatrix();
@@ -52,6 +51,8 @@ public:
 
 	PrefabEntity(std::string name, Vector3 position, const char* meshf, const char* texturef, Shader* shader);
 	PrefabEntity(std::string name, Mesh* mesh, Shader* shader, Texture* texture);
+
+	void render(Camera* camera);
 };
 
 class CarEntity : public PrefabEntity {

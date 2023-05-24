@@ -22,14 +22,12 @@ public:
 	Scene(Camera* camera);
 	virtual void renderScene(){}
 	virtual void update(float dt){}
-	bool parseScene(const char* filename);
+	bool parseScene(const char* filename, Shader* shader);
 };
 
 class PlayScene : public Scene 
 {
 public:
-	
-	std::vector<PrefabEntity*> prefab_entities;
 	CarEntity* car;
 	PrefabEntity* track;
 	Shader* shader;

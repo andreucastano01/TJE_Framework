@@ -10,20 +10,11 @@ Scene::Scene(Camera* camera) {
 	root = new Entity();
 };
 
-PlayScene::PlayScene(Camera* camera) : Scene(camera) {
-	prefab_entities = std::vector<PrefabEntity*>();
-	car = nullptr;
-	track = nullptr;
-	angle = 0;
-	mouse_speed = 10.0f;
-	mouse_locked = false;
-}
-
-bool Scene::parseScene(const char* filename)
+bool Scene::parseScene(const char* filename, Shader* shader)
 {
 	// You could fill the map manually to add shader and texture for each mesh
 	// If the mesh is not in the map, you can use the MTL file to render its colors
-	// meshes_to_load["meshes/example.obj"] = { Texture::Get("texture.tga"), Shader::Get("shader.vs", "shader.fs") };
+	//meshes_to_load["meshes/example.obj"] = { Texture::Get("texture.tga"), Shader::Get("shader.vs", "shader.fs") };
 
 	std::cout << " + Scene loading: " << filename << "..." << std::endl;
 
@@ -56,7 +47,7 @@ bool Scene::parseScene(const char* filename)
 		mesh_count++;
 	}
 
-	
+
 	// Iterate through meshes loaded and create corresponding entities
 	for (auto data : meshes_to_load) {
 
@@ -70,7 +61,7 @@ bool Scene::parseScene(const char* filename)
 		// Create instanced entity
 		if (render_data.models.size() > 1) {
 			//Esto deberia ser un instancedPrefabEntity o algo asi
-			PrefabEntity* new_entity = new PrefabEntity(mesh_name.c_str(), Mesh::Get(mesh_name.c_str()), render_data.shader, render_data.texture);
+			PrefabEntity* new_entity = new PrefabEntity(mesh_name.c_str(), Mesh::Get(mesh_name.c_str()), shader, render_data.texture);
 			// Add all instances
 			//new_entity->models = render_data.models;
 			// Add entity to scene root
@@ -78,7 +69,7 @@ bool Scene::parseScene(const char* filename)
 		}
 		// Create normal entity
 		else {
-			PrefabEntity* new_entity = new PrefabEntity(mesh_name.c_str(), Mesh::Get(mesh_name.c_str()), render_data.shader, render_data.texture);
+			PrefabEntity* new_entity = new PrefabEntity(mesh_name.c_str(), Mesh::Get(mesh_name.c_str()), shader, render_data.texture);
 			new_entity->model = render_data.models[0];
 			// Add entity to scene root
 			root->addChild(new_entity);
@@ -89,12 +80,25 @@ bool Scene::parseScene(const char* filename)
 	return true;
 }
 
-void PlayScene::setupScene(int window_width, int window_height) {
 
-	// example of shader loading using the shaders manager
+PlayScene::PlayScene(Camera* camera) : Scene(camera) {
+	car = nullptr;
+	track = nullptr;
+	angle = 0;
+	mouse_speed = 10.0f;
+	mouse_locked = false;
 	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
-	parseScene("data/track.scene");
+	skybox = CubemapFromHDRE("data/panorama.hdre");
+}
+
+
+void PlayScene::setupScene(int window_width, int window_height) {
+	// example of shader loading using the shaders manager
+	
+	parseScene("data/track.scene", shader);
+	
 	//speed values
+	//los parametros se pasan dentro de dos structs para tener constructores mas sencillos
 	sSpeedParameters sp = sSpeedParameters();
 	sp.max_speed = 50;
 	sp.max_acceleration = 10.5f;
@@ -117,12 +121,8 @@ void PlayScene::setupScene(int window_width, int window_height) {
 		sp,
 		tp
 	);
-	prefab_entities.push_back(car);
 
-	track = new PrefabEntity("track", Vector3(1, 1, 1), "data/track.obj", "data/grass.png", shader);
-	prefab_entities.push_back(track);
-
-	skybox = CubemapFromHDRE("data/panorama.hdre");
+	//track = new PrefabEntity("track", Vector3(1, 1, 1), "data/track.obj", "data/grass.png", shader);
 
 	Vector3 car_pos = car->model.getTranslation();
 
@@ -145,33 +145,12 @@ void PlayScene::renderScene() {
 		return;
 
 	generateSkybox();
+	//root renderiza la pista (en teoria)
+	root->render(camera);
+	//renderiza el coche
+	car->render(camera);
 
-	for (PrefabEntity* entity : prefab_entities) {
-		//enable shader
-		shader->enable();
-		
-		Vector3 sphere_center = entity->model * entity->mesh->box.center;
-		float sphere_radius = entity->mesh->radius;
 
-		// Discard objects whose bounding sphere 
-		// is not inside the camera frustum
-		if (camera->testSphereInFrustum(sphere_center, sphere_radius) == false)
-			continue;
-
-		//upload uniforms
-		shader->setUniform("u_color", Vector4(1, 1, 1, 1));
-		shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
-		shader->setUniform("u_texture", entity->texture, 0);
-		shader->setUniform("u_model", entity->model);
-		
-
-		//do the draw call
-		entity->mesh->render(GL_TRIANGLES);
-
-		//disable shader
-		shader->disable();
-	}
-	
 	//Draw the floor grid
 	//drawGrid();
 
