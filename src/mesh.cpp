@@ -11,7 +11,6 @@
 #include <sys/stat.h>
 
 #include "camera.h"
-#include "texture.h"
 #include "animation.h"
 #include "extra/coldet/coldet.h"
 
@@ -247,6 +246,7 @@ void Mesh::render(unsigned int primitive, int submesh_id, int num_instances)
 					shader->setUniform("u_Kd", materials[dc.material].Kd);
 					shader->setUniform("u_Ks", materials[dc.material].Ks);
 					shader->setUniform("u_Ns", materials[dc.material].Ns);
+					//if(materials[dc.material].text) shader->setUniform("u_texture", materials[dc.material].text, 0);
 				}
 				drawCall(primitive, i, j, num_instances);
 			}
@@ -1151,6 +1151,13 @@ bool Mesh::parseMTL(const char* filename)
 		else if (tokens[0] == "Ns")
 		{
 			info.Ns = (float)atof(tokens[1].c_str());
+		}
+		//Esto solo funciona para nuestro mapa especificamente
+		else if (tokens[0] == "map_Kd" && tokens[1] != "-s") {
+			std::string path = tokens[3].c_str();
+			std::string cut_path = path.substr(48, path.length());
+			std::string texture_path = "data/" + cut_path;
+			//info.text = Texture::Get(texture_path.c_str());
 		}
 	}
 
