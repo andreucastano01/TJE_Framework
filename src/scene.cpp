@@ -17,32 +17,7 @@ PlayScene::PlayScene(Camera* camera) : Scene(camera) {
 	mouse_speed = 10.0f;
 	mouse_locked = false;
 }
-Texture* CubemapFromHDRE(const char* filename)
-{
-	HDRE* hdre = HDRE::Get(filename);
-	if (!hdre)
-		return NULL;
 
-	Texture* texture = new Texture();
-	if (hdre->getFacesf(0))
-	{
-		texture->createCubemap(hdre->width, hdre->height, (Uint8**)hdre->getFacesf(0),
-			hdre->header.numChannels == 3 ? GL_RGB : GL_RGBA, GL_FLOAT);
-		for (int i = 1; i < hdre->levels; ++i)
-			texture->uploadCubemap(texture->format, texture->type, false,
-				(Uint8**)hdre->getFacesf(i), GL_RGBA32F, i);
-	}
-	else
-		if (hdre->getFacesh(0))
-		{
-			texture->createCubemap(hdre->width, hdre->height, (Uint8**)hdre->getFacesh(0),
-				hdre->header.numChannels == 3 ? GL_RGB : GL_RGBA, GL_HALF_FLOAT);
-			for (int i = 1; i < hdre->levels; ++i)
-				texture->uploadCubemap(texture->format, texture->type, false,
-					(Uint8**)hdre->getFacesh(i), GL_RGBA16F, i);
-		}
-	return texture;
-}
 
 struct sRenderData {
 	Texture* texture = nullptr;
@@ -128,18 +103,28 @@ void PlayScene::setupScene(int window_width, int window_height) {
 	// example of shader loading using the shaders manager
 	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
 
+	//speed values
+	sSpeedParameters sp = sSpeedParameters();
+	sp.max_speed = 50;
+	sp.max_acceleration = 10.5f;
+	sp.max_bracking = 20.5;
+	sp.downforce = 1.2;
+
+	sTurningParameters tp = sTurningParameters();
+	tp.max_angle = 30;
+	tp.turning_acceleration = 0.05;
+	tp.max_turn_speed = 1.1f / 100;
+	tp.centering_acceleration = 0.1;
+	tp.turning_speed_mult = 1.4f / 100;
+
 	car = new CarEntity(
 		"car", 
 		Vector3(200, 3, 500),
 		"data/car.obj", 
 		"data/Image_13.png", 
 		shader,
-		30.0,
-		30.0,
-		5.5,
-		3.5,
-		1.2,
-		10.0
+		sp,
+		tp
 	);
 	prefab_entities.push_back(car);
 
@@ -202,8 +187,9 @@ void PlayScene::renderScene() {
 	//render the FPS, Draw Calls, etc
 	drawText(2, 2, getGPUStats(), Vector3(1, 1, 1), 2);
 	//TODO hacer que la velocidad se muestre en "KPH"
-	drawText(370, 550, std::to_string(car->getSpeed()), Vector3(1, 1, 1), 2);
-	drawText(370, 570, car->getGear(), Vector3(1, 1, 1), 2);
+	drawText(370, 530, std::to_string(car->getSpeed()), Vector3(1, 1, 1), 2);
+	drawText(370, 550, car->getGear(), Vector3(1, 1, 1), 2);
+	drawText(370, 570, std::to_string(car->getRotationSpeed()), Vector3(1, 1, 1), 2);
 }
 
 void PlayScene::update(float dt) {
@@ -274,3 +260,29 @@ void PlayScene::generateSkybox() {
 	glEnable(GL_DEPTH_TEST);
 }
 
+Texture* CubemapFromHDRE(const char* filename)
+{
+	HDRE* hdre = HDRE::Get(filename);
+	if (!hdre)
+		return NULL;
+
+	Texture* texture = new Texture();
+	if (hdre->getFacesf(0))
+	{
+		texture->createCubemap(hdre->width, hdre->height, (Uint8**)hdre->getFacesf(0),
+			hdre->header.numChannels == 3 ? GL_RGB : GL_RGBA, GL_FLOAT);
+		for (int i = 1; i < hdre->levels; ++i)
+			texture->uploadCubemap(texture->format, texture->type, false,
+				(Uint8**)hdre->getFacesf(i), GL_RGBA32F, i);
+	}
+	else
+		if (hdre->getFacesh(0))
+		{
+			texture->createCubemap(hdre->width, hdre->height, (Uint8**)hdre->getFacesh(0),
+				hdre->header.numChannels == 3 ? GL_RGB : GL_RGBA, GL_HALF_FLOAT);
+			for (int i = 1; i < hdre->levels; ++i)
+				texture->uploadCubemap(texture->format, texture->type, false,
+					(Uint8**)hdre->getFacesh(i), GL_RGBA16F, i);
+		}
+	return texture;
+}

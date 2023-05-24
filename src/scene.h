@@ -5,6 +5,8 @@
 #include "camera.h"
 #include "shader.h"
 
+Texture* CubemapFromHDRE(const char* filename);
+
 class Scene
 {
 public:

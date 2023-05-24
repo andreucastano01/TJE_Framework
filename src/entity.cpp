@@ -37,50 +37,77 @@ PrefabEntity::PrefabEntity(std::string name, Mesh* mesh, Shader* shader, Texture
 	this->texture = texture;
 }
 
-CarEntity::CarEntity(std::string name, Vector3 position, const char* meshf, const char* texturef, Shader* shader,
-	float max_speed, float max_angle, float max_acceleration, float max_breacking, float downforce, float rotation_speed) : PrefabEntity(name, position, meshf, texturef, shader) {
-	this->max_speed = max_speed;
-	this->max_angle = max_angle;
-	this->max_acceleration = max_acceleration;
-	this->max_breacking = max_breacking;
-	this->downforce = downforce;
+CarEntity::CarEntity(std::string name, Vector3 position, const char* meshf, const char* texturef, Shader* shader, sSpeedParameters sp, sTurningParameters tp) : PrefabEntity(name, position, meshf, texturef, shader) {
+	speedParams = sp;
+	turnParams = tp;
+	
 	this->is_reversing = false;
-	this->rotation_speed = rotation_speed;
 
 
 	speed = 0;
 	angle = 0;
+	rotation_speed = 0;
 }
 
 void CarEntity::move(int direction, int turn, float dt, Camera* camera) {
 	//   forwards | backwards
 	Vector3 current_pos = model.getTranslation();
 	Matrix44 current_rot = model.getRotationOnly();
-
-  //if reversing make acceleation fo back and break go front
+	//rename for simplicity
+	sSpeedParameters sp = speedParams;
+	sTurningParameters tp = turnParams;
+	//if reversing make acceleation fo back and break go front
 	float flipSides = !is_reversing ? 1 : -1;
 	if (direction == 1 * flipSides) {
-		speed += max_acceleration * dt;
+		speed += sp.max_acceleration * dt;
 	}
 	else if (direction == -1 * flipSides) {
-		speed -= max_breacking * dt;
+		speed -= sp.max_bracking * dt;
 	}
 	else if(direction == 0 && speed != 0) {
 		//if no input slowly stop the car
 
 		float deceleration_direction = copysign(1.0, speed);
-		speed += -deceleration_direction * downforce * dt;
+		speed += -deceleration_direction * sp.downforce * dt;
 		if (abs(speed) < 0.01)
 			speed = 0;
 	}
 
 	float min_value = !is_reversing ? 0 : -2;
-	float max_value = !is_reversing ? max_speed : 0;
+	float max_value = !is_reversing ? sp.max_speed : 0;
 	speed = clamp(speed, min_value, max_value);
 
 	//Rotation
-	float rotation_amount = turn * rotation_speed * dt;
+	if (turn == 0) {
+		if (rotation_speed > 0.001) {
+			rotation_speed -= tp.turning_acceleration * dt;
+		}
+		else if (rotation_speed < -0.001) {
+			rotation_speed += tp.turning_acceleration * dt;
+		}
+		else {
+			rotation_speed = 0;
+		}
+		
+	}
+	else 
+		rotation_speed += turn*tp.turning_acceleration * dt;
+
+	float max_rotation_speed;
+	float normalized_speed = speed / sp.max_speed;
+	if (speed == 0.0) {
+		max_rotation_speed = 0;
+	}
+	else {
+		max_rotation_speed = tp.max_turn_speed + tp.turning_speed_mult*(1-normalized_speed);
+	}
+
+	rotation_speed = clamp(rotation_speed, -max_rotation_speed, max_rotation_speed);
+	
+	float rotation_amount =  rotation_speed;
+	rotation_amount =  clamp(rotation_amount, -tp.max_angle, tp.max_angle);
 	angle += rotation_amount;
+	
 
 	Matrix44 rotation_matrix;
 	rotation_matrix.setRotation(angle, Vector3(0, -1, 0));
