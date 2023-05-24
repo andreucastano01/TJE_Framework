@@ -95,8 +95,8 @@ PlayScene::PlayScene(Camera* camera) : Scene(camera) {
 void PlayScene::setupScene(int window_width, int window_height) {
 	// example of shader loading using the shaders manager
 	
-	parseScene("data/track.scene", shader);
-	//parseScene("data/aaa/paul/paul.scene", shader);
+	//parseScene("data/track.scene", shader);
+	parseScene("data/aaa/paul/paul.scene", shader);
 
 	//speed values
 	//los parametros se pasan dentro de dos structs para tener constructores mas sencillos
@@ -113,7 +113,6 @@ void PlayScene::setupScene(int window_width, int window_height) {
 	tp.centering_acceleration = 0.1;
 	tp.turning_speed_mult = 1.4f / 100;
 
-	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
 	car = new CarEntity(
 		"car", 
 		Vector3(200, 3, 500),

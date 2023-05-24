@@ -10,7 +10,7 @@ uniform vec3 lightPos;
 uniform float Ia;   // Ambient reflection coefficient
 uniform float Kd;   // Diffuse reflection coefficient
 uniform float Ks;   // Specular reflection coefficient
-uniform float shininessVal; // Shininess
+uniform float u_Ns; // Shininess
 
 uniform vec3 u_Ka;
 uniform vec3 u_Kd;
@@ -36,7 +36,7 @@ void main()
 		vec3 R = reflect(-L, N);
 		vec3 V = normalize(-v_position);
 	    float specAngle = max(dot(R, V), 0.0);
-		specular = pow(specAngle, shininessVal);
+		specular = pow(specAngle, u_Ns);
 	}
 	color = vec4(Ia * u_Ka +
                Kd * lambertian * u_Kd +

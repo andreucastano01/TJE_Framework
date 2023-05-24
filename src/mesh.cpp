@@ -246,6 +246,7 @@ void Mesh::render(unsigned int primitive, int submesh_id, int num_instances)
 					shader->setUniform("u_Ka", materials[dc.material].Ka);
 					shader->setUniform("u_Kd", materials[dc.material].Kd);
 					shader->setUniform("u_Ks", materials[dc.material].Ks);
+					shader->setUniform("u_Ns", materials[dc.material].Ns);
 				}
 				drawCall(primitive, i, j, num_instances);
 			}
