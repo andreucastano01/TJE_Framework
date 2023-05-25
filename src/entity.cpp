@@ -60,7 +60,7 @@ void PrefabEntity::render(Camera* camera) {
 	if (camera->testSphereInFrustum(sphere_center, sphere_radius) == false)
 		return;
 
-	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/phong.fs");
+	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/phongobj.fs");
 
 	//upload uniforms
 	shader->setUniform("u_color", Vector4(1, 1, 1, 1));
