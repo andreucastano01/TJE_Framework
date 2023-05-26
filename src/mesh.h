@@ -43,6 +43,8 @@ struct sMaterialInfo
 	Vector3 Ks;
 	float Ns;
 	Texture* text;
+	Texture* normal;
+	bool has_normal;
 };
 
 class Mesh

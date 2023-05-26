@@ -14,5 +14,8 @@ uniform float u_time;
 void main()
 {
 	vec2 uv = v_uv;
-	gl_FragColor = vec4(u_Kd, 1.0);
+	vec4 color;
+	color.xyz = u_Kd;
+	color *= texture(u_texture, v_uv);
+	gl_FragColor = color;
 }

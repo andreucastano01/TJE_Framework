@@ -246,7 +246,12 @@ void Mesh::render(unsigned int primitive, int submesh_id, int num_instances)
 					shader->setUniform("u_Kd", materials[dc.material].Kd);
 					shader->setUniform("u_Ks", materials[dc.material].Ks);
 					shader->setUniform("u_Ns", materials[dc.material].Ns);
-					//if(materials[dc.material].text) shader->setUniform("u_texture", materials[dc.material].text, 0);
+					shader->setUniform("u_texture", materials[dc.material].text, 0);
+					if (materials[dc.material].has_normal) {
+						shader->setUniform("u_have_normal_texture", 1);
+						shader->setUniform("u_texture_normal", materials[dc.material].normal, 1);
+					}
+					else shader->setUniform("u_have_normal_texture", 0);
 				}
 				drawCall(primitive, i, j, num_instances);
 			}
@@ -1107,6 +1112,11 @@ bool Mesh::parseMTL(const char* filename)
 
 	sMaterialInfo info;
 
+	info.text = new Texture();
+	info.normal = new Texture();
+	info.has_normal = false;
+	info.text = Texture::getWhiteTexture();
+
 	//parse file
 	while (*pos != 0)
 	{
@@ -1152,12 +1162,33 @@ bool Mesh::parseMTL(const char* filename)
 		{
 			info.Ns = (float)atof(tokens[1].c_str());
 		}
+
 		//Esto solo funciona para nuestro mapa especificamente
 		else if (tokens[0] == "map_Kd" && tokens[1] != "-s") {
 			std::string path = tokens[3].c_str();
 			std::string cut_path = path.substr(48, path.length());
-			std::string texture_path = "data/" + cut_path;
-			//info.text = Texture::Get(texture_path.c_str());
+			std::string texture_path = "data/textures/" + cut_path;
+			info.text = Texture::Get(texture_path.c_str());
+		}
+		else if (tokens[0] == "map_Kd" && tokens[1] == "-s") {
+			std::string path = tokens[7].c_str();
+			std::string cut_path = path.substr(48, path.length());
+			std::string texture_path = "data/textures/" + cut_path;
+			info.text = Texture::Get(texture_path.c_str());
+		}
+		else if (tokens[0] == "map_Bump" && tokens[1] == "-bm") {
+			info.has_normal = true;
+			std::string path = tokens[5].c_str();
+			std::string cut_path = path.substr(48, path.length());
+			std::string texture_path = "data/textures/" + cut_path;
+			info.normal = Texture::Get(texture_path.c_str());
+		}
+		else if (tokens[0] == "map_Bump" && tokens[1] != "-bm") {
+			info.has_normal = true;
+			std::string path = tokens[3].c_str();
+			std::string cut_path = path.substr(48, path.length());
+			std::string texture_path = "data/textures/" + cut_path;
+			info.normal = Texture::Get(texture_path.c_str());
 		}
 	}
 
