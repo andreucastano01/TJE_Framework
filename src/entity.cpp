@@ -50,7 +50,6 @@ PrefabEntity::PrefabEntity(std::string name, Mesh* mesh, Shader* shader, Texture
 }
 
 void PrefabEntity::render(Camera* camera) {
-	shader->enable();
 
 	Vector3 sphere_center = model * mesh->box.center;
 	float sphere_radius = mesh->radius;
@@ -61,6 +60,7 @@ void PrefabEntity::render(Camera* camera) {
 		return;
 
 	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/phong.fs");
+	shader->enable();
 
 	//upload uniforms
 	shader->setUniform("u_color", Vector4(1, 1, 1, 1));
