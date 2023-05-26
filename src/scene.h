@@ -7,23 +7,29 @@
 
 Texture* CubemapFromHDRE(const char* filename);
 
+struct sRenderData {
+	Texture* texture = nullptr;
+	Shader* shader = nullptr;
+	std::vector<Matrix44> models;
+};
+
 class Scene
 {
 public:
 	Camera* camera;
-
+	Entity* root;
+	std::map<std::string, sRenderData> meshes_to_load;
 	Scene(Camera* camera);
 	virtual void renderScene(){}
 	virtual void update(float dt){}
+	bool parseScene(const char* filename, Shader* shader);
+	bool parseCar(const char* filename,CarEntity* car, Shader* shader);
 };
 
 class PlayScene : public Scene 
 {
 public:
-	
-	std::vector<PrefabEntity*> prefab_entities;
 	CarEntity* car;
-	PrefabEntity* track;
 	Shader* shader;
 	Texture* skybox;
 	float angle;

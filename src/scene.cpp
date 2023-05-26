@@ -7,33 +7,15 @@
 
 Scene::Scene(Camera* camera) {
 	this->camera = camera;
+	root = new Entity();
 };
 
-PlayScene::PlayScene(Camera* camera) : Scene(camera) {
-	prefab_entities = std::vector<PrefabEntity*>();
-	car = nullptr;
-	track = nullptr;
-	angle = 0;
-	mouse_speed = 10.0f;
-	mouse_locked = false;
-}
-
-
-struct sRenderData {
-	Texture* texture = nullptr;
-	Shader* shader = nullptr;
-	std::vector<Matrix44> models;
-};
-
-Entity root;
-std::map<std::string, sRenderData> meshes_to_load;
-
-bool parseScene(const char* filename)
+bool Scene::parseScene(const char* filename, Shader* shader)
 {
 	// You could fill the map manually to add shader and texture for each mesh
 	// If the mesh is not in the map, you can use the MTL file to render its colors
-	// meshes_to_load["meshes/example.obj"] = { Texture::Get("texture.tga"), Shader::Get("shader.vs", "shader.fs") };
-
+	//meshes_to_load["meshes/example.obj"] = { Texture::Get("texture.tga"), Shader::Get("shader.vs", "shader.fs") };
+	meshes_to_load.clear();
 	std::cout << " + Scene loading: " << filename << "..." << std::endl;
 
 	std::ifstream file(filename);
@@ -65,7 +47,7 @@ bool parseScene(const char* filename)
 		mesh_count++;
 	}
 
-	
+
 	// Iterate through meshes loaded and create corresponding entities
 	for (auto data : meshes_to_load) {
 
@@ -79,18 +61,18 @@ bool parseScene(const char* filename)
 		// Create instanced entity
 		if (render_data.models.size() > 1) {
 			//Esto deberia ser un instancedPrefabEntity o algo asi
-			PrefabEntity* new_entity = new PrefabEntity(mesh_name.c_str(), Mesh::Get(mesh_name.c_str()), render_data.shader, render_data.texture);
+			PrefabEntity* new_entity = new PrefabEntity(mesh_name.c_str(), Mesh::Get(mesh_name.c_str()), shader, render_data.texture);
 			// Add all instances
 			//new_entity->models = render_data.models;
 			// Add entity to scene root
-			root.addChild(new_entity);
+			root->addChild(new_entity);
 		}
 		// Create normal entity
 		else {
-			PrefabEntity* new_entity = new PrefabEntity(mesh_name.c_str(), Mesh::Get(mesh_name.c_str()), render_data.shader, render_data.texture);
+			PrefabEntity* new_entity = new PrefabEntity(mesh_name.c_str(), Mesh::Get(mesh_name.c_str()), shader, render_data.texture);
 			new_entity->model = render_data.models[0];
 			// Add entity to scene root
-			root.addChild(new_entity);
+			root->addChild(new_entity);
 		}
 	}
 
@@ -98,17 +80,100 @@ bool parseScene(const char* filename)
 	return true;
 }
 
-void PlayScene::setupScene(int window_width, int window_height) {
+bool Scene::parseCar(const char* filename, CarEntity* car ,Shader* shader)
+{
+	// You could fill the map manually to add shader and texture for each mesh
+	// If the mesh is not in the map, you can use the MTL file to render its colors
+	//meshes_to_load["meshes/example.obj"] = { Texture::Get("texture.tga"), Shader::Get("shader.vs", "shader.fs") };
+	meshes_to_load.clear();
+	std::cout << " + Scene loading: " << filename << "..." << std::endl;
 
+	std::ifstream file(filename);
+
+	if (!file.good()) {
+		std::cerr << "Scene [ERROR]" << " File not found!" << std::endl;
+		return false;
+	}
+
+	std::string scene_info, mesh_name, model_data;
+	file >> scene_info; file >> scene_info;
+	int mesh_count = 0;
+
+	// Read file line by line and store mesh path and model info in separated variables
+	while (file >> mesh_name >> model_data)
+	{
+		// Get all 16 matrix floats
+		std::vector<std::string> tokens = tokenize(model_data, ",");
+
+		// Fill matrix converting chars to floats
+		Matrix44 model;
+		for (int t = 0; t < tokens.size(); ++t) {
+			model.m[t] = (float)atof(tokens[t].c_str());
+		}
+
+		// Add model to mesh list (might be instanced!)
+		sRenderData& render_data = meshes_to_load[mesh_name];
+		render_data.models.push_back(model);
+		mesh_count++;
+	}
+
+
+	// Iterate through meshes loaded and create corresponding entities
+	for (auto data : meshes_to_load) {
+
+		mesh_name = "data/" + data.first;
+		sRenderData& render_data = data.second;
+
+		// No transforms, anything to do here
+		if (render_data.models.empty())
+			continue;
+
+		// Create instanced entity
+		if (render_data.models.size() > 1) {
+			//Esto deberia ser un instancedPrefabEntity o algo asi
+			PrefabEntity* new_entity = new PrefabEntity(mesh_name.c_str(), Mesh::Get(mesh_name.c_str()), shader, render_data.texture);
+			// Add all instances
+			//new_entity->models = render_data.models;
+			// Add entity to scene root
+			car->addChild(new_entity);
+		}
+		// Create normal entity
+		else {
+			PrefabEntity* new_entity = new PrefabEntity(mesh_name.c_str(), Mesh::Get(mesh_name.c_str()), shader, render_data.texture);
+			new_entity->model = render_data.models[0];
+			// Add entity to scene root
+			car->addChild(new_entity);
+		}
+	}
+
+	std::cout << "Scene [OK]" << " Meshes added: " << mesh_count << std::endl;
+	return true;
+}
+
+
+PlayScene::PlayScene(Camera* camera) : Scene(camera) {
+	car = nullptr;
+	angle = 0;
+	mouse_speed = 10.0f;
+	mouse_locked = false;
+	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/phongobj.fs");
+	skybox = CubemapFromHDRE("data/panorama.hdre");
+}
+
+
+void PlayScene::setupScene(int window_width, int window_height) {
 	// example of shader loading using the shaders manager
-	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
+	
+	parseScene("data/track.scene", shader);
+	//parseScene("data/aaa/paul/paul.scene", shader);
 
 	//speed values
+	//los parametros se pasan dentro de dos structs para tener constructores mas sencillos
 	sSpeedParameters sp = sSpeedParameters();
-	sp.max_speed = 50;
+	sp.max_speed = 60;
 	sp.max_acceleration = 10.5f;
 	sp.max_bracking = 20.5;
-	sp.downforce = 1.2;
+	sp.downforce = 2.2;
 
 	sTurningParameters tp = sTurningParameters();
 	tp.max_angle = 30;
@@ -120,18 +185,15 @@ void PlayScene::setupScene(int window_width, int window_height) {
 	car = new CarEntity(
 		"car", 
 		Vector3(200, 3, 500),
-		"data/car.obj", 
-		"data/Image_13.png", 
 		shader,
 		sp,
-		tp
+		tp,
+		0.4
 	);
-	prefab_entities.push_back(car);
 
-	track = new PrefabEntity("track", Vector3(1, 1, 1), "data/track.obj", "data/grass.png", shader);
-	prefab_entities.push_back(track);
+	parseCar("data/car.scene", car ,shader);
 
-	skybox = CubemapFromHDRE("data/panorama.hdre");
+	//track = new PrefabEntity("track", Vector3(1, 1, 1), "data/track.obj", "data/grass.png", shader);
 
 	Vector3 car_pos = car->model.getTranslation();
 
@@ -140,7 +202,7 @@ void PlayScene::setupScene(int window_width, int window_height) {
 	//camera->setPerspective(70.f, window_width / (float)window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
 
 	//create our third person camera	
-	camera->lookAt(Vector3(car_pos.x, car_pos.y + 6, car_pos.z - 7), Vector3(car_pos.x, car_pos.y + 6, car_pos.z + 1), Vector3(0.f, 1.f, 0.f));
+	camera->lookAt(Vector3(car_pos.x, car_pos.y + 3, car_pos.z - 4), Vector3(car_pos.x, car_pos.y + 3, car_pos.z + 1), Vector3(0.f, 1.f, 0.f));
 	camera->setPerspective(70.f, window_width / (float)window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
 }
 
@@ -154,40 +216,18 @@ void PlayScene::renderScene() {
 		return;
 
 	generateSkybox();
+	//root renderiza la pista (en teoria)
+	root->render(camera);
+	//renderiza el coche
+	car->render(camera);
 
-	for (PrefabEntity* entity : prefab_entities) {
-		//enable shader
-		shader->enable();
-		
-		Vector3 sphere_center = entity->model * entity->mesh->box.center;
-		float sphere_radius = entity->mesh->radius;
-
-		// Discard objects whose bounding sphere 
-		// is not inside the camera frustum
-		if (camera->testSphereInFrustum(sphere_center, sphere_radius) == false)
-			continue;
-
-		//upload uniforms
-		shader->setUniform("u_color", Vector4(1, 1, 1, 1));
-		shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
-		shader->setUniform("u_texture", entity->texture, 0);
-		shader->setUniform("u_model", entity->model);
-		
-
-		//do the draw call
-		entity->mesh->render(GL_TRIANGLES);
-
-		//disable shader
-		shader->disable();
-	}
-	
 	//Draw the floor grid
 	//drawGrid();
 
 	//render the FPS, Draw Calls, etc
 	drawText(2, 2, getGPUStats(), Vector3(1, 1, 1), 2);
 	//TODO hacer que la velocidad se muestre en "KPH"
-	drawText(370, 530, std::to_string(car->getSpeed()), Vector3(1, 1, 1), 2);
+	drawText(370, 530, std::to_string((int)car->getSpeed()*6), Vector3(1, 1, 1), 2);
 	drawText(370, 550, car->getGear(), Vector3(1, 1, 1), 2);
 	drawText(370, 570, std::to_string(car->getRotationSpeed()), Vector3(1, 1, 1), 2);
 }

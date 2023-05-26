@@ -11,7 +11,6 @@
 #include <sys/stat.h>
 
 #include "camera.h"
-#include "texture.h"
 #include "animation.h"
 #include "extra/coldet/coldet.h"
 
@@ -246,6 +245,13 @@ void Mesh::render(unsigned int primitive, int submesh_id, int num_instances)
 					shader->setUniform("u_Ka", materials[dc.material].Ka);
 					shader->setUniform("u_Kd", materials[dc.material].Kd);
 					shader->setUniform("u_Ks", materials[dc.material].Ks);
+					shader->setUniform("u_Ns", materials[dc.material].Ns);
+					shader->setUniform("u_texture", materials[dc.material].text, 0);
+					if (materials[dc.material].has_normal) {
+						shader->setUniform("u_have_normal_texture", 1);
+						shader->setUniform("u_texture_normal", materials[dc.material].normal, 1);
+					}
+					else shader->setUniform("u_have_normal_texture", 0);
 				}
 				drawCall(primitive, i, j, num_instances);
 			}
@@ -1106,6 +1112,11 @@ bool Mesh::parseMTL(const char* filename)
 
 	sMaterialInfo info;
 
+	info.text = new Texture();
+	info.normal = new Texture();
+	info.has_normal = false;
+	info.text = Texture::getWhiteTexture();
+
 	//parse file
 	while (*pos != 0)
 	{
@@ -1150,6 +1161,28 @@ bool Mesh::parseMTL(const char* filename)
 		else if (tokens[0] == "Ns")
 		{
 			info.Ns = (float)atof(tokens[1].c_str());
+		}
+
+		//Esto solo funciona para nuestro mapa especificamente
+		else if (tokens[0] == "map_Kd") {
+			std::string path = tokens[tokens.size() - 1].c_str();
+			std::vector<std::string> pathTokens = tokenize(line, "\\");
+			std::string texture_path = "data/textures/" + pathTokens[pathTokens.size() - 1];
+			info.text = Texture::Get(texture_path.c_str());
+		}
+		else if (tokens[0] == "map_Bump" && tokens[1] == "-bm") {
+			info.has_normal = true;
+			std::string path = tokens[5].c_str();
+			std::string cut_path = path.substr(48, path.length());
+			std::string texture_path = "data/textures/" + cut_path;
+			info.normal = Texture::Get(texture_path.c_str());
+		}
+		else if (tokens[0] == "map_Bump" && tokens[1] != "-bm") {
+			info.has_normal = true;
+			std::string path = tokens[3].c_str();
+			std::string cut_path = path.substr(48, path.length());
+			std::string texture_path = "data/textures/" + cut_path;
+			info.normal = Texture::Get(texture_path.c_str());
 		}
 	}
 

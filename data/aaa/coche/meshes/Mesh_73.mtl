@@ -1,0 +1,12 @@
+# Blender MTL File: 'f1.blend'
+# Material Count: 1
+
+newmtl gp21_cockpit_metal
+Ns 690.262878
+Ka 0.796955 0.796955 0.796955
+Kd 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 3

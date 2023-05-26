@@ -23,11 +23,11 @@ struct sTurningParameters {
 class Entity {
 public:
 	Entity();
-	Entity(std::string name);
+	Entity(std::string name, float scale = 1);
 	
 	std::string name;
 	Matrix44 model;
-
+	float scale;
 	// Pointer to parent
 	Entity* parent;
 
@@ -36,8 +36,7 @@ public:
 
 	void addChild(Entity* child);
 	void removeChild(Entity* child);
-
-	virtual void render(){}
+	void render(Camera* camera);
 	virtual void update(float dt){}
 
 	Matrix44 getGlobalMatrix();
@@ -50,8 +49,11 @@ public:
 	Shader* shader;
 	Vector4 color;
 
-	PrefabEntity(std::string name, Vector3 position, const char* meshf, const char* texturef, Shader* shader);
-	PrefabEntity(std::string name, Mesh* mesh, Shader* shader, Texture* texture);
+	PrefabEntity(std::string name, Vector3 position, const char* meshf, const char* texturef, Shader* shader, float scale = 1);
+	PrefabEntity(std::string name, Mesh* mesh, Shader* shader, Texture* texture, float scale = 1);
+	PrefabEntity(std::string name, Vector3 position, Shader* shader, float scale = 1);
+
+	virtual void render(Camera* camera);
 };
 
 class CarEntity : public PrefabEntity {
@@ -61,10 +63,11 @@ public:
 	float angle;
 	float rotation_speed;
 	
-	CarEntity(std::string name, Vector3 position, const char* meshf, const char* texturef, Shader* shader, sSpeedParameters speedParams, sTurningParameters tp);
+	CarEntity(std::string name, Vector3 position, Shader* shader, sSpeedParameters speedParams, sTurningParameters tp, float scale = 1);
 	//direction: +1 accel forward -1 brake 0 no acceleration
 	//turn: +1 Turn left -1 Trun Right 0 no turn
 	void move(int direction, int turn, float dt, Camera* camera);
+	void render(Camera* camera);
 
 	inline float getSpeed() { return speed; }
 	inline void goBackwards() { is_reversing = true; }

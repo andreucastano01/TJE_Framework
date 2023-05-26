@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "framework.h"
+#include "texture.h"
 
 #include <map>
 #include <string>
@@ -41,6 +42,9 @@ struct sMaterialInfo
 	Vector3 Kd;
 	Vector3 Ks;
 	float Ns;
+	Texture* text;
+	Texture* normal;
+	bool has_normal;
 };
 
 class Mesh
