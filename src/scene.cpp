@@ -4,6 +4,7 @@
 #include "input.h"
 #include <fstream>
 #include <map>
+#include <iomanip>
 
 Scene::Scene(Camera* camera) {
 	this->camera = camera;
@@ -204,6 +205,25 @@ void PlayScene::setupScene(int window_width, int window_height) {
 	//create our third person camera	
 	camera->lookAt(Vector3(car_pos.x, car_pos.y + 3, car_pos.z - 4), Vector3(car_pos.x, car_pos.y + 3, car_pos.z + 1), Vector3(0.f, 1.f, 0.f));
 	camera->setPerspective(70.f, window_width / (float)window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
+
+	t.start();
+}
+
+std::string formatTime(long long milliseconds) {
+	int totalSeconds = static_cast<int>(milliseconds / 1000);
+	int minutes = totalSeconds / 60;
+	int seconds = totalSeconds % 60;
+	int millisecondsRemainder = milliseconds % 1000;
+
+	// Construct the formatted time string
+	std::stringstream ss;
+	if (minutes > 0) {
+		ss << std::setw(1) << std::setfill('0') << minutes << ":";
+	}
+
+	ss << std::setw(2) << std::setfill('0') << seconds << "." << std::setw(3) << std::setfill('0') << millisecondsRemainder;
+
+	return ss.str();
 }
 
 void PlayScene::renderScene() {
@@ -230,6 +250,7 @@ void PlayScene::renderScene() {
 	drawText(370, 530, std::to_string((int)car->getSpeed()*6), Vector3(1, 1, 1), 2);
 	drawText(370, 550, car->getGear(), Vector3(1, 1, 1), 2);
 	drawText(370, 570, std::to_string(car->getRotationSpeed()), Vector3(1, 1, 1), 2);
+	drawText(370, 510, "Time: " + formatTime(t.getTime()), Vector3(1, 1, 1), 2);
 }
 
 void PlayScene::update(float dt) {
@@ -267,6 +288,9 @@ void PlayScene::update(float dt) {
 	}
 	if (Input::isKeyPressed(SDL_SCANCODE_F) || Input::isKeyPressed(SDL_SCANCODE_RIGHT)) {
 		car->goForwards();
+	}
+	if (Input::isKeyPressed(SDL_SCANCODE_P)) {
+		t.stop();
 	}
 	car->move(dir, turn, dt, camera);
 	//camera->lookAt(Vector3(car_pos.x, car_pos.y + 6, car_pos.z - 7), Vector3(car_pos.x, car_pos.y + 6, car_pos.z + 1), Vector3(0.f, 1.f, 0.f));

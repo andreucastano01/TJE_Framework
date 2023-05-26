@@ -4,6 +4,7 @@
 #include "entity.h"
 #include "camera.h"
 #include "shader.h"
+#include "timer.h"
 
 Texture* CubemapFromHDRE(const char* filename);
 
@@ -18,6 +19,7 @@ class Scene
 public:
 	Camera* camera;
 	Entity* root;
+	timer t;
 	std::map<std::string, sRenderData> meshes_to_load;
 	Scene(Camera* camera);
 	virtual void renderScene(){}
