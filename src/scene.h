@@ -18,20 +18,18 @@ class Scene
 public:
 	Camera* camera;
 	Entity* root;
-	Entity* car;
 	std::map<std::string, sRenderData> meshes_to_load;
 	Scene(Camera* camera);
 	virtual void renderScene(){}
 	virtual void update(float dt){}
 	bool parseScene(const char* filename, Shader* shader);
-	bool parseCar(const char* filename, Shader* shader);
+	bool parseCar(const char* filename,CarEntity* car, Shader* shader);
 };
 
 class PlayScene : public Scene 
 {
 public:
 	CarEntity* car;
-	PrefabEntity* track;
 	Shader* shader;
 	Texture* skybox;
 	float angle;

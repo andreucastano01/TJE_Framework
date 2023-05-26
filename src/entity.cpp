@@ -2,7 +2,8 @@
 #include "camera.h"
 #include "shader.h"
 
-Entity::Entity(std::string name) {
+Entity::Entity(std::string name, float scale) {
+	this->scale = scale;
 	this->name = name;
 	parent = nullptr;
 }
@@ -35,37 +36,47 @@ void Entity::addChild(Entity* child) {
 void Entity::removeChild(Entity* child) {
 }
 
-PrefabEntity::PrefabEntity(std::string name, Vector3 position, const char* meshf, const char* texturef, Shader* shader) : Entity(name){
+PrefabEntity::PrefabEntity(std::string name, Vector3 position, const char* meshf, const char* texturef, Shader* shader, float scale) : Entity(name, scale){
 	mesh = Mesh::Get(meshf);
 	if (texturef) texture = Texture::Get(texturef); else texture = new Texture();
 	model.setTranslation(position.x, position.y, position.z);
 	this->shader = shader;
 }
 
-PrefabEntity::PrefabEntity(std::string name, Mesh* mesh, Shader* shader, Texture* texture) : Entity(name) {
+PrefabEntity::PrefabEntity(std::string name, Mesh* mesh, Shader* shader, Texture* texture, float scale) : Entity(name, scale) {
 	this->mesh = mesh;
 	this->shader = shader;
 	if (texture) this->texture = texture;
 	else this->texture = new Texture();
+	model.setIdentity();
+}
+
+PrefabEntity::PrefabEntity(std::string name, Vector3 position, Shader* shader, float scale) : Entity(name, scale) {
+	mesh = nullptr;
+	texture = nullptr;
+	model.setTranslation(position.x, position.y, position.z);
+	this->shader = shader;
 }
 
 void PrefabEntity::render(Camera* camera) {
-
 	Vector3 sphere_center = model * mesh->box.center;
 	float sphere_radius = mesh->radius;
 
 	// Discard objects whose bounding sphere 
 	// is not inside the camera frustum
-	if (camera->testSphereInFrustum(sphere_center, sphere_radius) == false)
-		return;
+	
+
+	//if (camera->testSphereInFrustum(sphere_center, sphere_radius) == false)
+		//return;
 
 	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/phong.fs");
 	shader->enable();
+	
 
 	//upload uniforms
 	shader->setUniform("u_color", Vector4(1, 1, 1, 1));
 	shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
-	shader->setUniform("u_model", model);
+	shader->setUniform("u_model", getGlobalMatrix());
 	shader->setUniform("lightPos", Vector3(10, 10, 10));
 	shader->setUniform("Ia", 0.7f);
 	shader->setUniform("Kd", 0.9f);
@@ -81,12 +92,12 @@ void PrefabEntity::render(Camera* camera) {
 		children[i]->render(camera);
 }
 
-CarEntity::CarEntity(std::string name, Vector3 position, const char* meshf, const char* texturef, Shader* shader, sSpeedParameters sp, sTurningParameters tp) : PrefabEntity(name, position, meshf, texturef, shader) {
+CarEntity::CarEntity(std::string name, Vector3 position, Shader* shader, sSpeedParameters sp, sTurningParameters tp, float scale) : PrefabEntity(name, position, shader, scale) {
 	speedParams = sp;
 	turnParams = tp;
 	
 	this->is_reversing = false;
-
+	this->model.scale(0.5,0.5,0.5);
 	speed = 0;
 	angle = 0;
 	rotation_speed = 0;
@@ -160,14 +171,24 @@ void CarEntity::move(int direction, int turn, float dt, Camera* camera) {
 	current_pos.z += forward.z * (speed * dt);
 	
 	model.setTranslation(current_pos.x, current_pos.y, current_pos.z);
+	model.scale(scale, scale, scale);
 	model.rotate(angle, Vector3(0, -1, 0));
 
 	//Camera
-	Vector3 camera_offset = Vector3(0, 6, -7.f); //Third person
+	Vector3 camera_offset = Vector3(0, 10, -10.f); //Third person
 	//Vector3 camera_offset = Vector3(0, 3.39, -1.f); //First person
 	Vector3 rotated_offset = rotation_matrix * camera_offset;
 	Vector3 camera_pos = current_pos + rotated_offset;
 	camera->eye = camera_pos;
-	camera->center = Vector3(current_pos.x, current_pos.y + 6, current_pos.z + 1); //Third person
+	camera->center = Vector3(current_pos.x, current_pos.y + 3, current_pos.z + 1); //Third person
 	//camera->center = Vector3(current_pos.x, current_pos.y + 3.36, current_pos.z); //First person
+}
+
+void CarEntity::render(Camera* camera) {
+	for (int i = 0; i < children.size(); i++) {
+		PrefabEntity* ent = (PrefabEntity*)children[i];
+		//Matrix44 m = ent->model * model;
+		//ent->model = ent->getGlobalMatrix();
+		ent->render(camera);
+	}
 }

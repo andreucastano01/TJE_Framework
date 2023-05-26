@@ -15,7 +15,7 @@ bool Scene::parseScene(const char* filename, Shader* shader)
 	// You could fill the map manually to add shader and texture for each mesh
 	// If the mesh is not in the map, you can use the MTL file to render its colors
 	//meshes_to_load["meshes/example.obj"] = { Texture::Get("texture.tga"), Shader::Get("shader.vs", "shader.fs") };
-
+	meshes_to_load.clear();
 	std::cout << " + Scene loading: " << filename << "..." << std::endl;
 
 	std::ifstream file(filename);
@@ -80,12 +80,12 @@ bool Scene::parseScene(const char* filename, Shader* shader)
 	return true;
 }
 
-bool Scene::parseCar(const char* filename, Shader* shader)
+bool Scene::parseCar(const char* filename, CarEntity* car ,Shader* shader)
 {
 	// You could fill the map manually to add shader and texture for each mesh
 	// If the mesh is not in the map, you can use the MTL file to render its colors
 	//meshes_to_load["meshes/example.obj"] = { Texture::Get("texture.tga"), Shader::Get("shader.vs", "shader.fs") };
-
+	meshes_to_load.clear();
 	std::cout << " + Scene loading: " << filename << "..." << std::endl;
 
 	std::ifstream file(filename);
@@ -153,7 +153,6 @@ bool Scene::parseCar(const char* filename, Shader* shader)
 
 PlayScene::PlayScene(Camera* camera) : Scene(camera) {
 	car = nullptr;
-	track = nullptr;
 	angle = 0;
 	mouse_speed = 10.0f;
 	mouse_locked = false;
@@ -171,10 +170,10 @@ void PlayScene::setupScene(int window_width, int window_height) {
 	//speed values
 	//los parametros se pasan dentro de dos structs para tener constructores mas sencillos
 	sSpeedParameters sp = sSpeedParameters();
-	sp.max_speed = 50;
+	sp.max_speed = 60;
 	sp.max_acceleration = 10.5f;
 	sp.max_bracking = 20.5;
-	sp.downforce = 1.2;
+	sp.downforce = 2.2;
 
 	sTurningParameters tp = sTurningParameters();
 	tp.max_angle = 30;
@@ -186,12 +185,13 @@ void PlayScene::setupScene(int window_width, int window_height) {
 	car = new CarEntity(
 		"car", 
 		Vector3(200, 3, 500),
-		"data/car.obj", 
-		"data/Image_13.png", 
 		shader,
 		sp,
-		tp
+		tp,
+		0.4
 	);
+
+	parseCar("data/car.scene", car ,shader);
 
 	//track = new PrefabEntity("track", Vector3(1, 1, 1), "data/track.obj", "data/grass.png", shader);
 
@@ -202,7 +202,7 @@ void PlayScene::setupScene(int window_width, int window_height) {
 	//camera->setPerspective(70.f, window_width / (float)window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
 
 	//create our third person camera	
-	camera->lookAt(Vector3(car_pos.x, car_pos.y + 6, car_pos.z - 7), Vector3(car_pos.x, car_pos.y + 6, car_pos.z + 1), Vector3(0.f, 1.f, 0.f));
+	camera->lookAt(Vector3(car_pos.x, car_pos.y + 3, car_pos.z - 4), Vector3(car_pos.x, car_pos.y + 3, car_pos.z + 1), Vector3(0.f, 1.f, 0.f));
 	camera->setPerspective(70.f, window_width / (float)window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
 }
 
@@ -221,14 +221,13 @@ void PlayScene::renderScene() {
 	//renderiza el coche
 	car->render(camera);
 
-
 	//Draw the floor grid
 	//drawGrid();
 
 	//render the FPS, Draw Calls, etc
 	drawText(2, 2, getGPUStats(), Vector3(1, 1, 1), 2);
 	//TODO hacer que la velocidad se muestre en "KPH"
-	drawText(370, 530, std::to_string(car->getSpeed()), Vector3(1, 1, 1), 2);
+	drawText(370, 530, std::to_string((int)car->getSpeed()*6), Vector3(1, 1, 1), 2);
 	drawText(370, 550, car->getGear(), Vector3(1, 1, 1), 2);
 	drawText(370, 570, std::to_string(car->getRotationSpeed()), Vector3(1, 1, 1), 2);
 }

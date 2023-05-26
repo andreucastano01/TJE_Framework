@@ -1164,16 +1164,10 @@ bool Mesh::parseMTL(const char* filename)
 		}
 
 		//Esto solo funciona para nuestro mapa especificamente
-		else if (tokens[0] == "map_Kd" && tokens[1] != "-s") {
-			std::string path = tokens[3].c_str();
-			std::string cut_path = path.substr(48, path.length());
-			std::string texture_path = "data/textures/" + cut_path;
-			info.text = Texture::Get(texture_path.c_str());
-		}
-		else if (tokens[0] == "map_Kd" && tokens[1] == "-s") {
-			std::string path = tokens[7].c_str();
-			std::string cut_path = path.substr(48, path.length());
-			std::string texture_path = "data/textures/" + cut_path;
+		else if (tokens[0] == "map_Kd") {
+			std::string path = tokens[tokens.size() - 1].c_str();
+			std::vector<std::string> pathTokens = tokenize(line, "\\");
+			std::string texture_path = "data/textures/" + pathTokens[pathTokens.size() - 1];
 			info.text = Texture::Get(texture_path.c_str());
 		}
 		else if (tokens[0] == "map_Bump" && tokens[1] == "-bm") {
