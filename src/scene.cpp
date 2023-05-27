@@ -8,7 +8,8 @@
 
 Scene::Scene(Camera* camera) {
 	this->camera = camera;
-	root = new Entity();
+	track = new Entity();
+	
 };
 
 bool Scene::parseScene(const char* filename, Shader* shader)
@@ -66,14 +67,15 @@ bool Scene::parseScene(const char* filename, Shader* shader)
 			// Add all instances
 			//new_entity->models = render_data.models;
 			// Add entity to scene root
-			root->addChild(new_entity);
+			track->addChild(new_entity);
 		}
 		// Create normal entity
 		else {
 			PrefabEntity* new_entity = new PrefabEntity(mesh_name.c_str(), Mesh::Get(mesh_name.c_str()), shader, render_data.texture);
 			new_entity->model = render_data.models[0];
+			new_entity->layer = TRACK;
 			// Add entity to scene root
-			root->addChild(new_entity);
+			track->addChild(new_entity);
 		}
 	}
 
@@ -178,10 +180,10 @@ void PlayScene::setupScene(int window_width, int window_height) {
 
 	sTurningParameters tp = sTurningParameters();
 	tp.max_angle = 30;
-	tp.turning_acceleration = 0.05;
-	tp.max_turn_speed = 1.1f / 100;
+	tp.turning_acceleration = 4;
+	tp.max_turn_speed = 1.1f;
 	tp.centering_acceleration = 0.1;
-	tp.turning_speed_mult = 1.4f / 100;
+	tp.turning_speed_mult = 1.4f;
 
 	car = new CarEntity(
 		"car", 
@@ -236,8 +238,8 @@ void PlayScene::renderScene() {
 		return;
 
 	generateSkybox();
-	//root renderiza la pista (en teoria)
-	root->render(camera);
+	//root renderiza la pista
+	track->render(camera);
 	//renderiza el coche
 	car->render(camera);
 
@@ -293,7 +295,12 @@ void PlayScene::update(float dt) {
 		t.stop();
 	}
 	car->move(dir, turn, dt, camera);
-	//camera->lookAt(Vector3(car_pos.x, car_pos.y + 6, car_pos.z - 7), Vector3(car_pos.x, car_pos.y + 6, car_pos.z + 1), Vector3(0.f, 1.f, 0.f));
+	std::vector<sCollisionData> collisions = std::vector<sCollisionData>();
+	checkCarCollisions(collisions);
+	Vector3 current_car_pos = car->getPosition();
+	if(!collisions.empty())
+		car->model.setPosition(current_car_pos.x, collisions[0].colPoint.y+1, current_car_pos.z);
+
 	//to navigate with the mouse fixed in the middle
 	if (mouse_locked)
 		Input::centerMouse();
@@ -303,7 +310,7 @@ void PlayScene::generateSkybox() {
 	Mesh* mesh = Mesh::Get("data/sphere.obj");
 	Shader* shader = Shader::Get("data/shaders/basic.vs", "data/shaders/skybox.fs");
 	shader->enable();
-
+	
 	Matrix44 model;
 
 	glDisable(GL_CULL_FACE);
@@ -349,4 +356,26 @@ Texture* CubemapFromHDRE(const char* filename)
 					(Uint8**)hdre->getFacesh(i), GL_RGBA16F, i);
 		}
 	return texture;
+}
+
+bool PlayScene::checkCarCollisions(std::vector<sCollisionData>& collisions) {
+	float sphereRadius = 3.f;
+	Vector3 colPoint, colNormal;
+
+	// For each collider entity “e” in root:
+	for each (PrefabEntity* e in track->children)
+	{
+		Mesh* mesh = e->mesh;
+
+		if (mesh->testRayCollision(e->model, car->getPosition() , Vector3(0, -1, 0), colPoint, colNormal, 50.f, false)) {
+			if (e->layer & TRACK) {
+				collisions.push_back({ colPoint,colNormal.normalize() });
+			}
+		}
+	}
+	
+	// End loop
+
+	return !collisions.empty();
+
 }

@@ -261,6 +261,11 @@ void Matrix44::scale(float x, float y, float z)
 	S.setScale(x, y, z);
 	*this = S * *this;
 }
+void Matrix44::setPosition(float x, float y, float z) {
+	m[12] = x;
+	m[13] = y;
+	m[14] = z;
+}
 
 void Matrix44::setScale(float x, float y, float z)
 {
@@ -278,6 +283,8 @@ void Matrix44::setTranslation(float x, float y, float z)
 	m[13] = y;
 	m[14] = z;
 }
+
+
 
 Vector3 Matrix44::getTranslation()
 {
