@@ -10,6 +10,7 @@ Entity::Entity(std::string name, float scale) {
 
 Entity::Entity() {
 	parent = nullptr;
+	scale = 1;
 }
 
 void Entity::render(Camera* camera) {
@@ -36,11 +37,14 @@ void Entity::addChild(Entity* child) {
 void Entity::removeChild(Entity* child) {
 }
 
+
+
 PrefabEntity::PrefabEntity(std::string name, Vector3 position, const char* meshf, const char* texturef, Shader* shader, float scale) : Entity(name, scale){
 	mesh = Mesh::Get(meshf);
 	if (texturef) texture = Texture::Get(texturef); else texture = new Texture();
 	model.setTranslation(position.x, position.y, position.z);
 	this->shader = shader;
+	isDynamic = false;
 }
 
 PrefabEntity::PrefabEntity(std::string name, Mesh* mesh, Shader* shader, Texture* texture, float scale) : Entity(name, scale) {
@@ -49,6 +53,7 @@ PrefabEntity::PrefabEntity(std::string name, Mesh* mesh, Shader* shader, Texture
 	if (texture) this->texture = texture;
 	else this->texture = new Texture();
 	model.setIdentity();
+	isDynamic = false;
 }
 
 PrefabEntity::PrefabEntity(std::string name, Vector3 position, Shader* shader, float scale) : Entity(name, scale) {
@@ -56,6 +61,7 @@ PrefabEntity::PrefabEntity(std::string name, Vector3 position, Shader* shader, f
 	texture = nullptr;
 	model.setTranslation(position.x, position.y, position.z);
 	this->shader = shader;
+	isDynamic = false;
 }
 
 void PrefabEntity::render(Camera* camera) {
@@ -95,7 +101,8 @@ void PrefabEntity::render(Camera* camera) {
 CarEntity::CarEntity(std::string name, Vector3 position, Shader* shader, sSpeedParameters sp, sTurningParameters tp, float scale) : PrefabEntity(name, position, shader, scale) {
 	speedParams = sp;
 	turnParams = tp;
-	
+	isDynamic = true;
+
 	this->is_reversing = false;
 	this->model.scale(0.5,0.5,0.5);
 	speed = 0;
@@ -157,10 +164,10 @@ void CarEntity::move(int direction, int turn, float dt, Camera* camera) {
 	}
 
 	rotation_speed = clamp(rotation_speed, -max_rotation_speed, max_rotation_speed);
-	
+	//TODO mirar por que la velocidad cambia dependiendo de FPS
 	float rotation_amount =  rotation_speed;
 	rotation_amount =  clamp(rotation_amount, -tp.max_angle, tp.max_angle);
-	angle += rotation_amount;
+	angle += rotation_amount*dt;
 	
 
 	Matrix44 rotation_matrix;
@@ -182,6 +189,7 @@ void CarEntity::move(int direction, int turn, float dt, Camera* camera) {
 	camera->eye = camera_pos;
 	camera->center = Vector3(current_pos.x, current_pos.y + 3, current_pos.z + 1); //Third person
 	//camera->center = Vector3(current_pos.x, current_pos.y + 3.36, current_pos.z); //First person
+	
 }
 
 void CarEntity::render(Camera* camera) {

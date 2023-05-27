@@ -19,6 +19,24 @@ struct sTurningParameters {
 	float turning_speed_mult; //when the car goes slower, it turns more
 };
 
+enum {
+	NONE = 0,
+	CAR,
+	TRACK,
+	WALLS,
+	FINISH,
+	SECTOR,
+	TRACK_LIMITS,
+	SCENARIO = TRACK | WALLS,
+	ALL = SCENARIO | CAR | FINISH | SECTOR | TRACK_LIMITS,
+	
+};
+
+struct sCollisionData {
+	Vector3 colPoint;
+	Vector3 colNormal;
+};
+
 
 class Entity {
 public:
@@ -40,9 +58,17 @@ public:
 	virtual void update(float dt){}
 
 	Matrix44 getGlobalMatrix();
+	inline Vector3 getPosition() { return model.getTranslation(); }
 };
 
-class PrefabEntity : public Entity {
+class EntityCollider {
+public:
+	bool isDynamic = false;
+	int layer = NONE;
+	virtual bool  testCollision(Entity* entity) { return false; }
+};
+
+class PrefabEntity : public Entity, public EntityCollider {
 public:
 	Mesh* mesh;
 	Texture* texture;
@@ -56,7 +82,7 @@ public:
 	virtual void render(Camera* camera);
 };
 
-class CarEntity : public PrefabEntity {
+class CarEntity : public PrefabEntity{
 public:
 	
 	float speed;
@@ -81,3 +107,5 @@ private:
 
 	bool is_reversing;
 };
+
+

@@ -18,7 +18,7 @@ class Scene
 {
 public:
 	Camera* camera;
-	Entity* root;
+	Entity* track;
 	timer t;
 	std::map<std::string, sRenderData> meshes_to_load;
 	Scene(Camera* camera);
@@ -44,5 +44,6 @@ public:
 	void setupScene(int window_width, int window_height);
 	void renderScene();
 	void update(float dt);
+	bool checkCarCollisions(std::vector<sCollisionData>& collisions);
 };
 

@@ -234,6 +234,7 @@ class Matrix44
 		void translate(float x, float y, float z);
 		void rotate( float angle_in_rad, const Vector3& axis  );
 		void scale(float x, float y, float z);
+		void setPosition(float x, float y, float z);
 
 		//transform using global coordinates
 		void translateGlobal(float x, float y, float z);
