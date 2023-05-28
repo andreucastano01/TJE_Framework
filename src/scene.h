@@ -5,6 +5,7 @@
 #include "camera.h"
 #include "shader.h"
 #include "timer.h"
+#include "extra/bass.h"
 
 Texture* CubemapFromHDRE(const char* filename);
 
@@ -37,6 +38,9 @@ public:
 	float angle;
 	float mouse_speed;
 	bool mouse_locked;
+
+	HSAMPLE hSample;	// Handler to store one sample	
+	HCHANNEL hSampleChannel; // Handler to store one channel
 
 	PlayScene(Camera* camera);
 
