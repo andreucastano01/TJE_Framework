@@ -37,8 +37,6 @@ void Entity::addChild(Entity* child) {
 void Entity::removeChild(Entity* child) {
 }
 
-
-
 PrefabEntity::PrefabEntity(std::string name, Vector3 position, const char* meshf, const char* texturef, Shader* shader, float scale) : Entity(name, scale){
 	mesh = Mesh::Get(meshf);
 	if (texturef) texture = Texture::Get(texturef); else texture = new Texture();
@@ -70,7 +68,6 @@ void PrefabEntity::render(Camera* camera) {
 
 	// Discard objects whose bounding sphere 
 	// is not inside the camera frustum
-	
 
 	//if (camera->testSphereInFrustum(sphere_center, sphere_radius) == false)
 		//return;
@@ -182,13 +179,13 @@ void CarEntity::move(int direction, int turn, float dt, Camera* camera) {
 	model.rotate(angle, Vector3(0, -1, 0));
 
 	//Camera
-	Vector3 camera_offset = Vector3(0, 10, -10.f); //Third person
-	//Vector3 camera_offset = Vector3(0, 3.39, -1.f); //First person
+	//Vector3 camera_offset = Vector3(0, 10, -10.f); //Third person
+	Vector3 camera_offset = Vector3(0, 0.79, -0.2f); //First person
 	Vector3 rotated_offset = rotation_matrix * camera_offset;
 	Vector3 camera_pos = current_pos + rotated_offset;
 	camera->eye = camera_pos;
-	camera->center = Vector3(current_pos.x, current_pos.y + 3, current_pos.z + 1); //Third person
-	//camera->center = Vector3(current_pos.x, current_pos.y + 3.36, current_pos.z); //First person
+	//camera->center = Vector3(current_pos.x, current_pos.y + 3, current_pos.z + 1); //Third person
+	camera->center = Vector3(current_pos.x, current_pos.y + 0.76, current_pos.z); //First person
 	
 }
 

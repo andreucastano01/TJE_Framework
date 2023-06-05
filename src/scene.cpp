@@ -5,6 +5,7 @@
 #include <fstream>
 #include <map>
 #include <iomanip>
+#include "audio.h"
 
 Scene::Scene(Camera* camera) {
 	this->camera = camera;
@@ -161,28 +162,6 @@ PlayScene::PlayScene(Camera* camera) : Scene(camera) {
 	mouse_locked = false;
 	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/phongobj.fs");
 	skybox = CubemapFromHDRE("data/panorama.hdre");
-	if (BASS_Init(-1, 44100, 0, 0, NULL) == false) {
-		// Error with sound device
-	}
-
-	// Load sample from disk
-	// flags: BASS_SAMPLE_LOOP, BASS_SAMPLE_3D, ...
-	hSample = BASS_SampleLoad(
-		false,  			// From internal memory
-		"data/DejaVu.wav", 	// Filepath
-		0,				// Offset
-		0,				// Length
-		3,				// Max playbacks
-		0 				// Flags
-	);
-
-	if (hSample == 0) // Error loading
-		return;
-
-	// Store sample channel in handler
-	hSampleChannel = BASS_SampleGetChannel(hSample, false);
-
-	BASS_ChannelSetAttribute(hSampleChannel, BASS_ATTRIB_VOL, 0.01f);
 }
 
 
@@ -223,15 +202,17 @@ void PlayScene::setupScene(int window_width, int window_height) {
 	Vector3 car_pos = car->model.getTranslation();
 
 	//create our first person camera
-	//camera->lookAt(Vector3(car_pos.x, car_pos.y + 3.6, car_pos.z), Vector3(car_pos.x, car_pos.y + 3.39, car_pos.z + 1), Vector3(0.f, 1.f, 0.f));
-	//camera->setPerspective(70.f, window_width / (float)window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
-
-	//create our third person camera	
-	camera->lookAt(Vector3(car_pos.x, car_pos.y + 3, car_pos.z - 4), Vector3(car_pos.x, car_pos.y + 3, car_pos.z + 1), Vector3(0.f, 1.f, 0.f));
+	camera->lookAt(Vector3(car_pos.x, car_pos.y + 3.6, car_pos.z - 3), Vector3(car_pos.x, car_pos.y + 3.39, car_pos.z + 1), Vector3(0.f, 1.f, 0.f));
 	camera->setPerspective(70.f, window_width / (float)window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
 
+	//create our third person camera	
+	//camera->lookAt(Vector3(car_pos.x, car_pos.y + 3, car_pos.z - 4), Vector3(car_pos.x, car_pos.y + 3, car_pos.z + 1), Vector3(0.f, 1.f, 0.f));
+	//camera->setPerspective(70.f, window_width / (float)window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
+
 	// Play channel
-	BASS_ChannelPlay(hSampleChannel, true);
+	//Audio::Play("data/DejaVu.wav");
+	//Audio::Play3D("data/F1_sonido.wav", Vector3(200, 0, 500));
+	Audio::Play("data/caster.wav");
 
 	t.start();
 }
