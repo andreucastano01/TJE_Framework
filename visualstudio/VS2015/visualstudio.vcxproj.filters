@@ -68,6 +68,7 @@
     <ClCompile Include="..\..\src\scene.cpp" />
     <ClCompile Include="..\..\src\timer.cpp" />
     <ClCompile Include="..\..\src\audio.cpp" />
+    <ClCompile Include="..\..\src\UI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\camera.h" />
@@ -133,6 +134,7 @@
     <ClInclude Include="..\..\src\entity.h" />
     <ClInclude Include="..\..\src\timer.h" />
     <ClInclude Include="..\..\src\audio.h" />
+    <ClInclude Include="..\..\src\UI.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="extra">

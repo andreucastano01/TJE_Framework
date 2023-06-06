@@ -68,7 +68,6 @@ void PrefabEntity::render(Camera* camera) {
 
 	// Discard objects whose bounding sphere 
 	// is not inside the camera frustum
-
 	//if (camera->testSphereInFrustum(sphere_center, sphere_radius) == false)
 		//return;
 

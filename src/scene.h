@@ -6,6 +6,7 @@
 #include "shader.h"
 #include "timer.h"
 #include "extra/bass.h"
+#include "UI.h"
 
 Texture* CubemapFromHDRE(const char* filename);
 
@@ -38,6 +39,9 @@ public:
 	float angle;
 	float mouse_speed;
 	bool mouse_locked;
+	int window_width;
+	int window_height;
+	UI* ui;
 
 	HSAMPLE hSample;	// Handler to store one sample	
 	HCHANNEL hSampleChannel; // Handler to store one channel

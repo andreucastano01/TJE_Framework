@@ -48,6 +48,7 @@ public:
 	float scale;
 	// Pointer to parent
 	Entity* parent;
+	float distance_to_camera;
 
 	// Pointers to children
 	std::vector<Entity*> children;

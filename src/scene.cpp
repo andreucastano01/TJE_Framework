@@ -145,6 +145,8 @@ bool Scene::parseCar(const char* filename, CarEntity* car ,Shader* shader)
 		else {
 			PrefabEntity* new_entity = new PrefabEntity(mesh_name.c_str(), Mesh::Get(mesh_name.c_str()), shader, render_data.texture);
 			new_entity->model = render_data.models[0];
+			Vector3 nodepos = new_entity->model.getTranslation();
+			new_entity->distance_to_camera = nodepos.distance(camera->eye);
 			// Add entity to scene root
 			car->addChild(new_entity);
 		}
@@ -166,7 +168,10 @@ PlayScene::PlayScene(Camera* camera) : Scene(camera) {
 
 
 void PlayScene::setupScene(int window_width, int window_height) {
-	// example of shader loading using the shaders manager
+	this->window_height = window_height;
+	this->window_width = window_width;
+
+	ui = new UI(window_width, window_height);
 	
 	parseScene("data/track.scene", shader);
 	//parseScene("data/aaa/paul/paul.scene", shader);
@@ -210,9 +215,9 @@ void PlayScene::setupScene(int window_width, int window_height) {
 	//camera->setPerspective(70.f, window_width / (float)window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
 
 	// Play channel
-	//Audio::Play("data/DejaVu.wav");
-	//Audio::Play3D("data/F1_sonido.wav", Vector3(200, 0, 500));
-	Audio::Play("data/caster.wav");
+	//Audio::Play("data/sounds/DejaVu.wav");
+	//Audio::Play3D("data/sounds/F1_sonido.wav", Vector3(200, 0, 500));
+	Audio::Play("data/sounds/caster.wav");
 
 	t.start();
 }
@@ -230,6 +235,15 @@ std::string formatTime(long long milliseconds) {
 	}
 
 	ss << std::setw(2) << std::setfill('0') << seconds << "." << std::setw(3) << std::setfill('0') << millisecondsRemainder;
+
+	return ss.str();
+}
+
+std::string formatSpeed(long long speed) {
+	// Construct the formatted time string
+	std::stringstream ss;
+
+	ss << std::setw(3) << std::setfill('0') << speed;
 
 	return ss.str();
 }
@@ -252,13 +266,19 @@ void PlayScene::renderScene() {
 	//Draw the floor grid
 	//drawGrid();
 
+	//Draw GUI
+	//ui->drawMinimap(car, track);
+	ui->drawGUI();
+
 	//render the FPS, Draw Calls, etc
 	drawText(2, 2, getGPUStats(), Vector3(1, 1, 1), 2);
+
+	//drawText(370, 550, car->getGear(), Vector3(1, 1, 1), 2);
+	//drawText(370, 570, std::to_string(car->getRotationSpeed()), Vector3(1, 1, 1), 2);
+
 	//TODO hacer que la velocidad se muestre en "KPH"
-	drawText(370, 530, std::to_string((int)car->getSpeed()*6), Vector3(1, 1, 1), 2);
-	drawText(370, 550, car->getGear(), Vector3(1, 1, 1), 2);
-	drawText(370, 570, std::to_string(car->getRotationSpeed()), Vector3(1, 1, 1), 2);
-	drawText(370, 510, "Time: " + formatTime(t.getTime()), Vector3(1, 1, 1), 2);
+	drawText(87, window_height - 125, formatSpeed((int)car->getSpeed()*5), Vector3(1, 1, 1), 3); //Mirar onResize de alguna forma
+	drawText(window_width - 145, 20, "Time: " + formatTime(t.getTime()), Vector3(1, 1, 1), 2);
 }
 
 void PlayScene::update(float dt) {
