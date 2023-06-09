@@ -42,6 +42,7 @@ public:
 	int window_width;
 	int window_height;
 	UI* ui;
+	PrefabEntity *finnish, *sector1, *sector2;
 
 	HSAMPLE hSample;	// Handler to store one sample	
 	HCHANNEL hSampleChannel; // Handler to store one channel
@@ -53,5 +54,6 @@ public:
 	void renderScene();
 	void update(float dt);
 	bool checkCarCollisions(std::vector<sCollisionData>& collisions);
+	void setupTrackLimits();
 };
 

@@ -175,7 +175,7 @@ void PlayScene::setupScene(int window_width, int window_height) {
 	
 	parseScene("data/track.scene", shader);
 	//parseScene("data/aaa/paul/paul.scene", shader);
-
+	
 	//speed values
 	//los parametros se pasan dentro de dos structs para tener constructores mas sencillos
 	sSpeedParameters sp = sSpeedParameters();
@@ -202,17 +202,35 @@ void PlayScene::setupScene(int window_width, int window_height) {
 
 	parseCar("data/car.scene", car ,shader);
 
-	//track = new PrefabEntity("track", Vector3(1, 1, 1), "data/track.obj", "data/grass.png", shader);
-
 	Vector3 car_pos = car->model.getTranslation();
+	//--------------SECOTRES
+	finnish = new PrefabEntity("finnish", Vector3(223, 4, 612), shader, 1);
+	finnish->model.scale(10, 2, 0.5);
+	finnish->mesh = Mesh::Get("data/cube.obj");
+	finnish->layer = FINISH;
+	track->addChild(finnish);
+
+	sector1 = new PrefabEntity("sector1", Vector3(-192, 4, 468), shader, 1);
+	sector1->model.scale(10, 2, 0.5);
+	sector1->mesh = Mesh::Get("data/cube.obj");
+	sector1->layer = SECTOR1;
+	track->addChild(sector1);
+
+	sector2 = new PrefabEntity("sector2", Vector3(-132, 4, -702), shader, 1);
+	sector2->model.scale(10, 3, 0.5);
+	sector2->mesh = Mesh::Get("data/cube.obj");
+	sector2->layer = SECTOR2;
+	track->addChild(sector2);
+
+	setupTrackLimits();
 
 	//create our first person camera
-	camera->lookAt(Vector3(car_pos.x, car_pos.y + 3.6, car_pos.z - 3), Vector3(car_pos.x, car_pos.y + 3.39, car_pos.z + 1), Vector3(0.f, 1.f, 0.f));
-	camera->setPerspective(70.f, window_width / (float)window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
+	//camera->lookAt(Vector3(car_pos.x, car_pos.y + 3.6, car_pos.z - 3), Vector3(car_pos.x, car_pos.y + 3.39, car_pos.z + 1), Vector3(0.f, 1.f, 0.f));
+	//camera->setPerspective(70.f, window_width / (float)window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
 
 	//create our third person camera	
-	//camera->lookAt(Vector3(car_pos.x, car_pos.y + 3, car_pos.z - 4), Vector3(car_pos.x, car_pos.y + 3, car_pos.z + 1), Vector3(0.f, 1.f, 0.f));
-	//camera->setPerspective(70.f, window_width / (float)window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
+	camera->lookAt(Vector3(car_pos.x, car_pos.y + 3, car_pos.z - 4), Vector3(car_pos.x, car_pos.y + 3, car_pos.z + 1), Vector3(0.f, 1.f, 0.f));
+	camera->setPerspective(70.f, window_width / (float)window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
 
 	// Play channel
 	//Audio::Play("data/sounds/DejaVu.wav");
@@ -265,7 +283,7 @@ void PlayScene::renderScene() {
 
 	//Draw the floor grid
 	//drawGrid();
-
+	//finnish->render(camera); //si layer != track no render
 	//Draw GUI
 	//ui->drawMinimap(car, track);
 	ui->drawGUI();
@@ -295,7 +313,7 @@ void PlayScene::update(float dt) {
 	Vector3 car_pos = car->model.getTranslation();
 	int dir = 0;
 	int turn = 0;
-
+	Vector3 prevPos = car->model.getTranslation();
 	//async input to move the camera around
 	//if (Input::isKeyPressed(SDL_SCANCODE_LSHIFT)) speed *= 10; //move faster with left shift
 	if (Input::isKeyPressed(SDL_SCANCODE_W) || Input::isKeyPressed(SDL_SCANCODE_UP)) {
@@ -328,9 +346,16 @@ void PlayScene::update(float dt) {
 	std::vector<sCollisionData> collisions = std::vector<sCollisionData>();
 	checkCarCollisions(collisions);
 	Vector3 current_car_pos = car->getPosition();
-	if(!collisions.empty())
-		car->model.setPosition(current_car_pos.x, collisions[0].colPoint.y+1, current_car_pos.z);
-
+	if (!collisions.empty()) {
+		for each (sCollisionData collision in collisions)
+		{
+			if(collision.type == FLOOR)
+				car->model.setPosition(current_car_pos.x, collisions[0].colPoint.y+1, current_car_pos.z);
+			if (collision.type == WALL)
+				car->model.setPosition(prevPos.x, prevPos.y, prevPos.z);
+		}
+	}
+	//std::cout << current_car_pos.x << " " << current_car_pos.y << " " << current_car_pos.z << std::endl;
 	//to navigate with the mouse fixed in the middle
 	if (mouse_locked)
 		Input::centerMouse();
@@ -391,21 +416,79 @@ Texture* CubemapFromHDRE(const char* filename)
 bool PlayScene::checkCarCollisions(std::vector<sCollisionData>& collisions) {
 	float sphereRadius = 3.f;
 	Vector3 colPoint, colNormal;
-
+	float colisionDisatance = 1.0f;
 	// For each collider entity “e” in root:
 	for each (PrefabEntity* e in track->children)
 	{
 		Mesh* mesh = e->mesh;
+		double distance = abs(car->getPosition().distance(e->model.getTranslation()));
+		//don't test ray if mesh is far
+		Vector3 groundCheckPos = car->getPosition() + Vector3(1, 0, 0);
 
 		if (mesh->testRayCollision(e->model, car->getPosition() , Vector3(0, -1, 0), colPoint, colNormal, 50.f, false)) {
 			if (e->layer & TRACK) {
-				collisions.push_back({ colPoint,colNormal.normalize() });
+				collisions.push_back({ colPoint,colNormal.normalize(), FLOOR });
 			}
 		}
+		
+		if (mesh->testRayCollision(e->model, car->getPosition(), Vector3(0, 0, 1), colPoint, colNormal, colisionDisatance, false)) {
+			if (e->layer == FINISH) {
+				//collisions.push_back({ colPoint,colNormal.normalize(), WALL });
+				std::cout << "que grande eres magic!" << std::endl;
+			}
+			else if (e->layer == SECTOR1) {
+				std::cout << "pinta de morado el primer sector" << std::endl;
+			}
+			else if (e->layer == SECTOR2) {
+				std::cout << "va volando magic en la pista" << std::endl;
+			}
+			
+		}
+		
+		
 	}
-	
 	// End loop
 
 	return !collisions.empty();
 
+}
+
+void PlayScene::setupTrackLimits() {
+	Vector3 positions[12] = {
+		Vector3(259, 4, 848),
+		Vector3(253, 4, 923),
+		Vector3(-38, 4, 726),
+		Vector3(-213, 4, 334),
+		Vector3(-277, 4, 297),
+		Vector3(-240, 4, -332),
+		Vector3(-232, 4, -379),
+		Vector3(-147, 4, -934),
+		Vector3(-152, 4, -987),
+		Vector3(-100, 4, -845),
+		Vector3(150, 4, 175),
+		Vector3(164, 4, 216)
+	};
+
+	Vector3 scales[12] = {
+		Vector3(25, 4, 20),
+		Vector3(20, 4, 9),
+		Vector3(5, 4, 1),
+		Vector3(8, 4, 1),
+		Vector3(3, 4, 8),
+		Vector3(20, 4, 8), //chicane antes de lo de kubica
+		Vector3(15, 4, 10),
+		Vector3(2, 4, 23), //horquilla
+		Vector3(20, 4, 14),
+		Vector3(3, 4, 3),
+		Vector3(7, 4, 7),
+		Vector3(12, 4, 11),
+	};			
+
+	for(int i = 0; i < 12; i++) {
+		PrefabEntity* trackLimit = new PrefabEntity("trackLimit", positions[i], shader, 1);
+		trackLimit->model.scale(scales[i]);
+		trackLimit->mesh = Mesh::Get("data/cube.obj");
+		trackLimit->layer = TRACK_LIMITS;
+		track->addChild(trackLimit);
+	}
 }
