@@ -25,16 +25,24 @@ enum {
 	TRACK,
 	WALLS,
 	FINISH,
-	SECTOR,
+	SECTOR1,
+	SECTOR2,
 	TRACK_LIMITS,
 	SCENARIO = TRACK | WALLS,
-	ALL = SCENARIO | CAR | FINISH | SECTOR | TRACK_LIMITS,
+	ALL = SCENARIO | CAR | FINISH | SECTOR1| SECTOR2 | TRACK_LIMITS,
 	
+};
+
+enum eCollisionType {
+	FLOOR,
+	WALL,
+	TRIGGER,
 };
 
 struct sCollisionData {
 	Vector3 colPoint;
 	Vector3 colNormal;
+	eCollisionType type;
 };
 
 

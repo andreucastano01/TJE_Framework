@@ -17,6 +17,7 @@ void Entity::render(Camera* camera) {
 	for (int i = 0; i < children.size(); i++) {
 		//cast to prefab to render
 		PrefabEntity* ent = (PrefabEntity*)children[i];
+		//if (ent->layer != TRACK) continue;
 		ent->render(camera);
 	}	
 }
@@ -178,13 +179,13 @@ void CarEntity::move(int direction, int turn, float dt, Camera* camera) {
 	model.rotate(angle, Vector3(0, -1, 0));
 
 	//Camera
-	//Vector3 camera_offset = Vector3(0, 10, -10.f); //Third person
-	Vector3 camera_offset = Vector3(0, 0.79, -0.2f); //First person
+	Vector3 camera_offset = Vector3(0, 10, -10.f); //Third person
+	//Vector3 camera_offset = Vector3(0, 0.79, -0.2f); //First person
 	Vector3 rotated_offset = rotation_matrix * camera_offset;
 	Vector3 camera_pos = current_pos + rotated_offset;
 	camera->eye = camera_pos;
-	//camera->center = Vector3(current_pos.x, current_pos.y + 3, current_pos.z + 1); //Third person
-	camera->center = Vector3(current_pos.x, current_pos.y + 0.76, current_pos.z); //First person
+	camera->center = Vector3(current_pos.x, current_pos.y + 3, current_pos.z + 1); //Third person
+	//camera->center = Vector3(current_pos.x, current_pos.y + 0.76, current_pos.z); //First person
 	
 }
 

@@ -82,6 +82,7 @@ double Vector3::length() const
 Vector3& Vector3::normalize()
 {
 	double len = length();
+	if (len < 0.00000000001) return *this;
 	assert(len > 0.00000000001 && "Cannot normalize a vector with module 0");
 	x = (float)(x / len);
 	y = (float)(y / len);
@@ -261,6 +262,21 @@ void Matrix44::scale(float x, float y, float z)
 	S.setScale(x, y, z);
 	*this = S * *this;
 }
+
+void Matrix44::scale(float x)
+{
+	Matrix44 S;
+	S.setScale(x, x, x);
+	*this = S * *this;
+}
+
+void Matrix44::scale(Vector3 s)
+{
+	Matrix44 S;
+	S.setScale(s.x, s.y, s.z);
+	*this = S * *this;
+}
+
 void Matrix44::setPosition(float x, float y, float z) {
 	m[12] = x;
 	m[13] = y;
@@ -284,6 +300,13 @@ void Matrix44::setTranslation(float x, float y, float z)
 	m[14] = z;
 }
 
+void Matrix44::setTranslation(Vector3 pos)
+{
+	setIdentity();
+	m[12] = pos.x;
+	m[13] = pos.y;
+	m[14] = pos.z;
+}
 
 
 Vector3 Matrix44::getTranslation()
