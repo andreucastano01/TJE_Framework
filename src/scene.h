@@ -44,6 +44,7 @@ public:
 	UI* ui;
 	PrefabEntity *finnish, *sector1, *sector2;
 	long long best_time;
+	std::vector<std::string> tiempos;
 
 	HSAMPLE hSample;	// Handler to store one sample	
 	HCHANNEL hSampleChannel; // Handler to store one channel
@@ -56,5 +57,6 @@ public:
 	void update(float dt);
 	bool checkCarCollisions(std::vector<sCollisionData>& collisions);
 	void setupTrackLimits();
+	void guardarTiempos();
 };
 

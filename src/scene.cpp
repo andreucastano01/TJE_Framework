@@ -6,6 +6,7 @@
 #include <map>
 #include <iomanip>
 #include "audio.h"
+#include <algorithm>
 
 Scene::Scene(Camera* camera) {
 	this->camera = camera;
@@ -248,7 +249,7 @@ void PlayScene::setupScene(int window_width, int window_height) {
 
 	setupTrackLimits();
 
-	//Best Time
+	//Mejor Time
 	std::ifstream archivo("data/tiempo.txt");
 	std::string tiempo;
 
@@ -259,16 +260,12 @@ void PlayScene::setupScene(int window_width, int window_height) {
 		std::cout << best_time << std::endl;
 	}
 	else {
-		if (std::getline(archivo, tiempo)) {
-			best_time = convertirATiempoNumerico(tiempo);
+		while (std::getline(archivo, tiempo)) {
+			tiempos.push_back(tiempo);
 		}
-		else {
-			std::cerr << "Error al leer el tiempo del archivo" << std::endl;
-			tiempo = "59:59.999";
-			best_time = convertirATiempoNumerico(tiempo);
-		}
+		best_time = convertirATiempoNumerico(tiempos[0]);
 
-		archivo.close(); // Cerrar el archivo
+		archivo.close();
 	}
 
 	//create our first person camera
@@ -455,17 +452,26 @@ Texture* CubemapFromHDRE(const char* filename)
 	return texture;
 }
 
-void guardarMejorTiempo(const std::string& mejorTiempo) {
-	std::ofstream archivoSalida("data/tiempo.txt"); // Abrir el archivo en modo de escritura
+void PlayScene::guardarTiempos() {
+	std::ofstream archivoSalida("data/tiempo.txt");
 
 	if (!archivoSalida) {
 		std::cerr << "Error al abrir el archivo de salida" << std::endl;
 		return;
 	}
 
-	archivoSalida << mejorTiempo; // Escribir el mejor tiempo en el archivo
+	for (const auto& tiempo : tiempos) {
+		archivoSalida << tiempo << std::endl;
+	}
 
-	archivoSalida.close(); // Cerrar el archivo
+	archivoSalida.close();
+}
+
+bool comparadorTiempos(const std::string& tiempo1, const std::string& tiempo2) {
+	long long tiempoNumerico1 = convertirATiempoNumerico(tiempo1);
+	long long tiempoNumerico2 = convertirATiempoNumerico(tiempo2);
+
+	return tiempoNumerico1 < tiempoNumerico2;
 }
 
 bool PlayScene::checkCarCollisions(std::vector<sCollisionData>& collisions) {
@@ -488,15 +494,17 @@ bool PlayScene::checkCarCollisions(std::vector<sCollisionData>& collisions) {
 		
 		if (mesh->testRayCollision(e->model, car->getPosition(), Vector3(0, 0, 1), colPoint, colNormal, colisionDisatance, false)) {
 			if (e->layer == FINISH) {
+				t.stop();
+				//Si se completa la vuelta correctamente
 				if (car->sectors[0] == true && car->sectors[1] == true && car->track_limits == false) {
-					t.stop();
 					std::string stiempo = formatTime(t.getTime());
 					long long tiempo = convertirATiempoNumerico(stiempo);
-					if (best_time > tiempo) {
-						best_time = tiempo;
-						guardarMejorTiempo(stiempo);
-					}
+					tiempos.push_back(stiempo);
+					std::sort(tiempos.begin(), tiempos.end(), comparadorTiempos);
+					if (best_time > tiempo) best_time = tiempo;
+					guardarTiempos();
 				}
+
 				car->sectors[0] = false;
 				car->sectors[1] = false;
 				car->track_limits = false;
