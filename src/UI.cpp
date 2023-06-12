@@ -59,17 +59,17 @@ void UI::drawTime() {
 	Mesh quad;
 
 	// Three vertices of the 1st triangle
-	quad.vertices.push_back(Vector3(window_width - 160, window_height, 0));
+	quad.vertices.push_back(Vector3(window_width - 220, window_height, 0));
 	quad.uvs.push_back(Vector2(0, 1));
-	quad.vertices.push_back(Vector3(window_width - 160, window_height - 60, 0));
+	quad.vertices.push_back(Vector3(window_width - 220, window_height - 80, 0));
 	quad.uvs.push_back(Vector2(0, 0));
-	quad.vertices.push_back(Vector3(window_width, window_height - 60, 0));
+	quad.vertices.push_back(Vector3(window_width, window_height - 80, 0));
 	quad.uvs.push_back(Vector2(1, 0));
 
 	// Three vertices of the 2nd triangle
-	quad.vertices.push_back(Vector3(window_width - 160, window_height, 0));
+	quad.vertices.push_back(Vector3(window_width - 220, window_height, 0));
 	quad.uvs.push_back(Vector2(0, 1));
-	quad.vertices.push_back(Vector3(window_width, window_height - 60, 0));
+	quad.vertices.push_back(Vector3(window_width, window_height - 80, 0));
 	quad.uvs.push_back(Vector2(1, 0));
 	quad.vertices.push_back(Vector3(window_width, window_height, 0));
 	quad.uvs.push_back(Vector2(1, 1));
@@ -93,37 +93,6 @@ void UI::drawMinimap(CarEntity* car, Entity* track) {
 
 	track->render(&minimapCamera);
 	car->render(&minimapCamera);
-
-	shader = Shader::Get("data/shaders/GUI.vs", "data/shaders/GUI.fs");
-	shader->enable();
-
-	shader->setUniform("u_viewprojection", minimapCamera.viewprojection_matrix);
-
-	Mesh quad;
-
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_CULL_FACE);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	// Three vertices of the 1st triangle
-	quad.vertices.push_back(Vector3(400, 580, 0));
-	quad.uvs.push_back(Vector2(0, 1));
-	quad.vertices.push_back(Vector3(400, 400, 0));
-	quad.uvs.push_back(Vector2(0, 0));
-	quad.vertices.push_back(Vector3(580, 400, 0));
-	quad.uvs.push_back(Vector2(1, 0));
-
-	// Three vertices of the 2nd triangle
-	quad.vertices.push_back(Vector3(400, 580, 0));
-	quad.uvs.push_back(Vector2(0, 1));
-	quad.vertices.push_back(Vector3(500, 400, 0));
-	quad.uvs.push_back(Vector2(1, 0));
-	quad.vertices.push_back(Vector3(580, 580, 0));
-	quad.uvs.push_back(Vector2(1, 1));
-
-	// Draw call
-	quad.render(GL_TRIANGLE_FAN);
 
 	glViewport(0, 0, window_width, window_height);
 

@@ -156,6 +156,26 @@ bool Scene::parseCar(const char* filename, CarEntity* car ,Shader* shader)
 	return true;
 }
 
+long long convertirATiempoNumerico(const std::string& tiempo) {
+	std::stringstream ss(tiempo);
+	char separador;
+	int minutos = 0, segundos, milisegundos;
+
+	if (tiempo.find(':') != std::string::npos) {
+		ss >> minutos >> separador >> segundos >> separador >> milisegundos;
+	}
+	else {
+		ss >> segundos >> separador >> milisegundos;
+	}
+
+	if (ss.fail() || separador != '.' || minutos < 0 || segundos < 0 || segundos >= 60 || milisegundos < 0 || milisegundos >= 1000) {
+		std::cerr << "Error al convertir el tiempo" << std::endl;
+		return 0;
+	}
+
+	long long tiempoNumerico = minutos * 60000LL + segundos * 1000LL + milisegundos;
+	return tiempoNumerico;
+}
 
 PlayScene::PlayScene(Camera* camera) : Scene(camera) {
 	car = nullptr;
@@ -203,7 +223,7 @@ void PlayScene::setupScene(int window_width, int window_height) {
 	parseCar("data/car.scene", car ,shader);
 
 	Vector3 car_pos = car->model.getTranslation();
-	//--------------SECOTRES
+	//--------------SECTORES
 	finnish = new PrefabEntity("finnish", Vector3(223, 4, 612), shader, 1);
 	finnish->model.scale(10, 2, 0.5);
 	finnish->mesh = Mesh::Get("data/cube.obj");
@@ -222,7 +242,34 @@ void PlayScene::setupScene(int window_width, int window_height) {
 	sector2->layer = SECTOR2;
 	track->addChild(sector2);
 
+	car->sectors[0] = false;
+	car->sectors[1] = false;
+	car->track_limits = true;
+
 	setupTrackLimits();
+
+	//Best Time
+	std::ifstream archivo("data/tiempo.txt");
+	std::string tiempo;
+
+	if (!archivo) {
+		std::cerr << "Error al abrir el archivo" << std::endl;
+		tiempo = "59:59.999";
+		best_time = convertirATiempoNumerico(tiempo);
+		std::cout << best_time << std::endl;
+	}
+	else {
+		if (std::getline(archivo, tiempo)) {
+			best_time = convertirATiempoNumerico(tiempo);
+		}
+		else {
+			std::cerr << "Error al leer el tiempo del archivo" << std::endl;
+			tiempo = "59:59.999";
+			best_time = convertirATiempoNumerico(tiempo);
+		}
+
+		archivo.close(); // Cerrar el archivo
+	}
 
 	//create our first person camera
 	//camera->lookAt(Vector3(car_pos.x, car_pos.y + 3.6, car_pos.z - 3), Vector3(car_pos.x, car_pos.y + 3.39, car_pos.z + 1), Vector3(0.f, 1.f, 0.f));
@@ -295,8 +342,10 @@ void PlayScene::renderScene() {
 	//drawText(370, 570, std::to_string(car->getRotationSpeed()), Vector3(1, 1, 1), 2);
 
 	//TODO hacer que la velocidad se muestre en "KPH"
-	drawText(87, window_height - 125, formatSpeed((int)car->getSpeed()*5), Vector3(1, 1, 1), 3); //Mirar onResize de alguna forma
-	drawText(window_width - 145, 20, "Time: " + formatTime(t.getTime()), Vector3(1, 1, 1), 2);
+	drawText(87, window_height - 125, formatSpeed((int)car->getSpeed()*5), Vector3(1, 1, 1), 3);
+	drawText(window_width - 210, 20, "Time: " + formatTime(t.getTime()), Vector3(1, 1, 1), 2);
+	if(best_time < 3599998) drawText(window_width - 210, 45, "Best time: " + formatTime(best_time), Vector3(1, 1, 1), 2);
+	else drawText(window_width - 210, 45, "Best time: ", Vector3(1, 1, 1), 2);
 }
 
 void PlayScene::update(float dt) {
@@ -334,13 +383,6 @@ void PlayScene::update(float dt) {
 	}
 	if (Input::isKeyPressed(SDL_SCANCODE_F) || Input::isKeyPressed(SDL_SCANCODE_RIGHT)) {
 		car->goForwards();
-	}
-	if (Input::isKeyPressed(SDL_SCANCODE_P)) {
-		t.stop();
-	}
-	if (Input::isKeyPressed(SDL_SCANCODE_O)) {
-		t.reset();
-		t.start();
 	}
 	car->move(dir, turn, dt, camera);
 	std::vector<sCollisionData> collisions = std::vector<sCollisionData>();
@@ -413,6 +455,19 @@ Texture* CubemapFromHDRE(const char* filename)
 	return texture;
 }
 
+void guardarMejorTiempo(const std::string& mejorTiempo) {
+	std::ofstream archivoSalida("data/tiempo.txt"); // Abrir el archivo en modo de escritura
+
+	if (!archivoSalida) {
+		std::cerr << "Error al abrir el archivo de salida" << std::endl;
+		return;
+	}
+
+	archivoSalida << mejorTiempo; // Escribir el mejor tiempo en el archivo
+
+	archivoSalida.close(); // Cerrar el archivo
+}
+
 bool PlayScene::checkCarCollisions(std::vector<sCollisionData>& collisions) {
 	float sphereRadius = 3.f;
 	Vector3 colPoint, colNormal;
@@ -433,19 +488,31 @@ bool PlayScene::checkCarCollisions(std::vector<sCollisionData>& collisions) {
 		
 		if (mesh->testRayCollision(e->model, car->getPosition(), Vector3(0, 0, 1), colPoint, colNormal, colisionDisatance, false)) {
 			if (e->layer == FINISH) {
-				//collisions.push_back({ colPoint,colNormal.normalize(), WALL });
-				std::cout << "que grande eres magic!" << std::endl;
+				if (car->sectors[0] == true && car->sectors[1] == true && car->track_limits == false) {
+					t.stop();
+					std::string stiempo = formatTime(t.getTime());
+					long long tiempo = convertirATiempoNumerico(stiempo);
+					if (best_time > tiempo) {
+						best_time = tiempo;
+						guardarMejorTiempo(stiempo);
+					}
+				}
+				car->sectors[0] = false;
+				car->sectors[1] = false;
+				car->track_limits = false;
+				t.reset();
+				t.start();
 			}
 			else if (e->layer == SECTOR1) {
-				std::cout << "pinta de morado el primer sector" << std::endl;
+				if (car->sectors[0] == false) car->sectors[0] = true;
 			}
 			else if (e->layer == SECTOR2) {
-				std::cout << "va volando magic en la pista" << std::endl;
+				if (car->sectors[1] == false && car->sectors[0] == true) car->sectors[1] = true;
 			}
-			
-		}
-		
-		
+			else if (e->layer == TRACK_LIMITS) {
+				car->track_limits = true;
+			}	
+		}		
 	}
 	// End loop
 

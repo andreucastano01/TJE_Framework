@@ -99,6 +99,8 @@ CarEntity::CarEntity(std::string name, Vector3 position, Shader* shader, sSpeedP
 	speedParams = sp;
 	turnParams = tp;
 	isDynamic = true;
+	sectors[0] = false;
+	sectors[1] = false;
 
 	this->is_reversing = false;
 	this->model.scale(0.5,0.5,0.5);

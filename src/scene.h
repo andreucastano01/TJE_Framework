@@ -43,6 +43,7 @@ public:
 	int window_height;
 	UI* ui;
 	PrefabEntity *finnish, *sector1, *sector2;
+	long long best_time;
 
 	HSAMPLE hSample;	// Handler to store one sample	
 	HCHANNEL hSampleChannel; // Handler to store one channel

@@ -97,6 +97,8 @@ public:
 	float speed;
 	float angle;
 	float rotation_speed;
+	bool sectors[2];
+	bool track_limits;
 	
 	CarEntity(std::string name, Vector3 position, Shader* shader, sSpeedParameters speedParams, sTurningParameters tp, float scale = 1);
 	//direction: +1 accel forward -1 brake 0 no acceleration

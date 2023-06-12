@@ -121,4 +121,6 @@ void Game::onResize(int width, int height)
 	camera->aspect =  width / (float)height;
 	window_width = width;
 	window_height = height;
+	play_scene->window_height = height;
+	play_scene->window_width = width;
 }
