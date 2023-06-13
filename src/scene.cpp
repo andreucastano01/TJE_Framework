@@ -320,6 +320,8 @@ void PlayScene::renderScene() {
 		return;
 
 	generateSkybox();
+
+	
 	//root renderiza la pista
 	track->render(camera);
 	//renderiza el coche
@@ -327,7 +329,6 @@ void PlayScene::renderScene() {
 
 	//Draw the floor grid
 	//drawGrid();
-	//finnish->render(camera); //si layer != track no render
 	//Draw GUI
 	//ui->drawMinimap(car, track);
 	ui->drawGUI();
@@ -338,9 +339,10 @@ void PlayScene::renderScene() {
 	//drawText(370, 550, car->getGear(), Vector3(1, 1, 1), 2);
 	//drawText(370, 570, std::to_string(car->getRotationSpeed()), Vector3(1, 1, 1), 2);
 
-	//TODO hacer que la velocidad se muestre en "KPH"
+	//TODO Los drawText son una basura
 	drawText(87, window_height - 125, formatSpeed((int)car->getSpeed()*5), Vector3(1, 1, 1), 3);
 	drawText(window_width - 210, 20, "Time: " + formatTime(t.getTime()), Vector3(1, 1, 1), 2);
+	if (car->track_limits) drawText(window_width - 30, 20, "TL", Vector3(1, 1, 1), 2);
 	if(best_time < 3599998) drawText(window_width - 210, 45, "Best time: " + formatTime(best_time), Vector3(1, 1, 1), 2);
 	else drawText(window_width - 210, 45, "Best time: ", Vector3(1, 1, 1), 2);
 }
@@ -492,7 +494,14 @@ bool PlayScene::checkCarCollisions(std::vector<sCollisionData>& collisions) {
 			}
 		}
 		
-		if (mesh->testRayCollision(e->model, car->getPosition(), Vector3(0, 0, 1), colPoint, colNormal, colisionDisatance, false)) {
+		if (mesh->testSphereCollision(e->model, car->getPosition(), 18.0f, colPoint, colNormal)) {
+
+			colNormal.normalize();
+
+			if (colNormal.dot(Vector3(0, 1, 0)) > 0.8) {
+				continue;
+			}
+
 			if (e->layer == FINISH) {
 				t.stop();
 				//Si se completa la vuelta correctamente
@@ -519,7 +528,18 @@ bool PlayScene::checkCarCollisions(std::vector<sCollisionData>& collisions) {
 			}
 			else if (e->layer == TRACK_LIMITS) {
 				car->track_limits = true;
-			}	
+			}
+			else {
+				collisions.push_back({ colPoint, colNormal, WALL });
+				/*
+				Vector3& velocity = player->velocity;
+				Vector3 newDir = velocity.dot(collisionNormal);
+				newDir *= collisionNormal;
+
+				velocity.x -= newDir.x;
+				velocity.z -= newDir.z;
+				*/
+			}
 		}		
 	}
 	// End loop

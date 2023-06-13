@@ -44,6 +44,10 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 	play_scene -> setupScene(window_width, window_height);
 	current_scene = play_scene;
 
+	minimapCamera = new Camera();
+	//minimapCamera.setPerspective(0, window_width, 0, window_height, 0.1f, 10000.f);
+	minimapCamera->setPerspective(70.f, window_width / (float)window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
+
 
 	//hide the cursor
 	SDL_ShowCursor(!mouse_locked); //hide or show the mouse

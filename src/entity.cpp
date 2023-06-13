@@ -17,7 +17,7 @@ void Entity::render(Camera* camera) {
 	for (int i = 0; i < children.size(); i++) {
 		//cast to prefab to render
 		PrefabEntity* ent = (PrefabEntity*)children[i];
-		//if (ent->layer != TRACK) continue;
+		if (ent->layer != TRACK) continue;
 		ent->render(camera);
 	}	
 }
@@ -64,13 +64,20 @@ PrefabEntity::PrefabEntity(std::string name, Vector3 position, Shader* shader, f
 }
 
 void PrefabEntity::render(Camera* camera) {
-	Vector3 sphere_center = model * mesh->box.center;
+
+	const Matrix44& globalMatrix = getGlobalMatrix();
+	Vector3 sphere_center = globalMatrix * mesh->box.center;
 	float sphere_radius = mesh->radius;
+
+	//mesh->renderBounding(globalMatrix);
 
 	// Discard objects whose bounding sphere 
 	// is not inside the camera frustum
-	//if (camera->testSphereInFrustum(sphere_center, sphere_radius) == false)
-		//return;
+	if (camera->testSphereInFrustum(sphere_center, sphere_radius) == false) {
+		std::cout << "a" << std::endl;
+		return;
+	}
+	
 
 	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/phong.fs");
 	shader->enable();
@@ -79,7 +86,7 @@ void PrefabEntity::render(Camera* camera) {
 	//upload uniforms
 	shader->setUniform("u_color", Vector4(1, 1, 1, 1));
 	shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
-	shader->setUniform("u_model", getGlobalMatrix());
+	shader->setUniform("u_model", globalMatrix);
 	shader->setUniform("lightPos", Vector3(10, 10, 10));
 	shader->setUniform("Ia", 0.7f);
 	shader->setUniform("Kd", 0.9f);
@@ -110,6 +117,15 @@ CarEntity::CarEntity(std::string name, Vector3 position, Shader* shader, sSpeedP
 }
 
 void CarEntity::move(int direction, int turn, float dt, Camera* camera) {
+	/*
+	Vector3& velocity = player->velocity;
+	Vector3 newDir = velocity.dot(collisionNormal);
+	newDir *= collisionNormal;
+
+	velocity.x -= newDir.x;
+	velocity.z -= newDir.z;
+	*/
+
 	//   forwards | backwards
 	Vector3 current_pos = model.getTranslation();
 	Matrix44 current_rot = model.getRotationOnly();
@@ -163,7 +179,7 @@ void CarEntity::move(int direction, int turn, float dt, Camera* camera) {
 	}
 
 	rotation_speed = clamp(rotation_speed, -max_rotation_speed, max_rotation_speed);
-	//TODO mirar por que la velocidad cambia dependiendo de FPS
+
 	float rotation_amount =  rotation_speed;
 	rotation_amount =  clamp(rotation_amount, -tp.max_angle, tp.max_angle);
 	angle += rotation_amount*dt;

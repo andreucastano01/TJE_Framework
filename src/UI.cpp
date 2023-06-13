@@ -1,4 +1,5 @@
 #include "UI.h"
+#include "game.h"
 
 UI::UI(int window_width, int window_height) {
 	this->window_height = window_height;
@@ -82,21 +83,20 @@ void UI::drawTime() {
 }
 
 void UI::drawMinimap(CarEntity* car, Entity* track) {
-	glViewport(0, 0, 180, 180);
+	glViewport(window_width - 180, window_height/2, 180, 180);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
 
 	Vector3 car_pos = car->model.getTranslation();
-	Camera minimapCamera;
-	minimapCamera.lookAt(Vector3(car_pos.x, car_pos.y + 100, car_pos.z), car_pos, Vector3(0.0f, 1.0f, 0.0f));
-	minimapCamera.setOrthographic(0, window_width, 0, window_height, -1, 1);
+	Camera* minimapCamera = Game::instance->minimapCamera;
+	minimapCamera->lookAt(Vector3(car_pos.x, car_pos.y + 100, car_pos.z + 1), car_pos, Vector3(0.0f, 1.0f, 0.0f));
 
-	track->render(&minimapCamera);
-	car->render(&minimapCamera);
+	minimapCamera->enable();
+
+	track->render(minimapCamera);
+	car->render(minimapCamera);
 
 	glViewport(0, 0, window_width, window_height);
-
-	shader->disable();
 }
 
 void UI::drawGUI() {
