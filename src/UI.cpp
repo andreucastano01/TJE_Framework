@@ -83,13 +83,47 @@ void UI::drawTime() {
 }
 
 void UI::drawMinimap(CarEntity* car, Entity* track) {
-	glViewport(window_width - 180, window_height/2, 180, 180);
+	
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	shader = Shader::Get("data/shaders/GUI.vs", "data/shaders/flat.fs");
+	shader->enable();
+
+	shader->setUniform("u_viewprojection", camera2D.viewprojection_matrix);
+
+	Mesh quad;
+
+	// Three vertices of the 1st triangle
+	quad.vertices.push_back(Vector3(window_width - 190, 0, 0));
+	quad.uvs.push_back(Vector2(0, 1));
+	quad.vertices.push_back(Vector3(window_width - 190, 190, 0));
+	quad.uvs.push_back(Vector2(0, 0));
+	quad.vertices.push_back(Vector3(window_width, 190, 0));
+	quad.uvs.push_back(Vector2(1, 0));
+
+	// Three vertices of the 2nd triangle
+	quad.vertices.push_back(Vector3(window_width - 190, 0, 0));
+	quad.uvs.push_back(Vector2(0, 1));
+	quad.vertices.push_back(Vector3(window_width, 190, 0));
+	quad.uvs.push_back(Vector2(1, 0));
+	quad.vertices.push_back(Vector3(window_width, 0, 0));
+	quad.uvs.push_back(Vector2(1, 1));
+
+	shader->setUniform("u_color", Vector4(0.0f, 0.0f, 0.0f, 0.9f));
+
+	quad.render(GL_TRIANGLES);
+
+	shader->disable();
+
+	glViewport(window_width - 180, 0, 180, 180);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
 
 	Vector3 car_pos = car->model.getTranslation();
 	Camera* minimapCamera = Game::instance->minimapCamera;
-	minimapCamera->lookAt(Vector3(car_pos.x, car_pos.y + 100, car_pos.z + 1), car_pos, Vector3(0.0f, 1.0f, 0.0f));
+	minimapCamera->lookAt(Vector3(car_pos.x, car_pos.y + 100, car_pos.z + 0.1f), car_pos, Vector3(0.0f, 1.0f, 0.0f));
 
 	minimapCamera->enable();
 

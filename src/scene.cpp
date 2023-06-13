@@ -330,7 +330,7 @@ void PlayScene::renderScene() {
 	//Draw the floor grid
 	//drawGrid();
 	//Draw GUI
-	//ui->drawMinimap(car, track);
+	ui->drawMinimap(car, track);
 	ui->drawGUI();
 
 	//render the FPS, Draw Calls, etc
