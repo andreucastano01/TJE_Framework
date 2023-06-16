@@ -66,15 +66,15 @@ PrefabEntity::PrefabEntity(std::string name, Vector3 position, Shader* shader, f
 void PrefabEntity::render(Camera* camera) {
 
 	const Matrix44& globalMatrix = getGlobalMatrix();
-	Vector3 sphere_center = globalMatrix * mesh->box.center;
-	float sphere_radius = mesh->radius;
+	Vector3 box_center = globalMatrix * mesh->box.center;
+	Vector3 half_size = mesh->box.halfsize;
 
 	//mesh->renderBounding(globalMatrix);
 
 	// Discard objects whose bounding sphere 
 	// is not inside the camera frustum
-	if (camera->testSphereInFrustum(sphere_center, sphere_radius) == false) {
-		std::cout << "a" << std::endl;
+	if (camera->testBoxInFrustum(box_center, half_size) == false) {
+		//std::cout << "a" << std::endl;
 		return;
 	}
 	

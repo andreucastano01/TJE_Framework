@@ -221,7 +221,7 @@ void PlayScene::setupScene(int window_width, int window_height) {
 		0.4
 	);
 
-	parseCar("data/car.scene", car ,shader);
+	parseCar("data/car2.scene", car ,shader);
 
 	Vector3 car_pos = car->model.getTranslation();
 	//--------------SECTORES
@@ -581,7 +581,7 @@ void PlayScene::setupTrackLimits() {
 
 	for(int i = 0; i < 12; i++) {
 		PrefabEntity* trackLimit = new PrefabEntity("trackLimit", positions[i], shader, 1);
-		trackLimit->model.scale(scales[i]);
+		//trackLimit->model.scale(scales[i]);
 		trackLimit->mesh = Mesh::Get("data/cube.obj");
 		trackLimit->layer = TRACK_LIMITS;
 		track->addChild(trackLimit);
