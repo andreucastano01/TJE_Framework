@@ -75,7 +75,21 @@ bool Scene::parseScene(const char* filename, Shader* shader)
 		else {
 			PrefabEntity* new_entity = new PrefabEntity(mesh_name.c_str(), Mesh::Get(mesh_name.c_str()), shader, render_data.texture);
 			new_entity->model = render_data.models[0];
-			new_entity->layer = TRACK;
+			if (mesh_name.find("TrackLimits") != std::string::npos) {
+				new_entity->layer = TRACK_LIMITS;
+			}
+			else if (mesh_name.find("Finish") != std::string::npos) {
+				new_entity->layer = FINISH;
+			}
+			else if (mesh_name.find("Sector1") != std::string::npos) {
+				new_entity->layer = SECTOR1;
+			}
+			else if (mesh_name.find("Sector2") != std::string::npos) {
+				new_entity->layer = SECTOR2;
+			}
+			else {
+				new_entity->layer = TRACK;
+			}
 			// Add entity to scene root
 			track->addChild(new_entity);
 		}
@@ -224,7 +238,7 @@ void PlayScene::setupScene(int window_width, int window_height) {
 	parseCar("data/car2.scene", car ,shader);
 
 	Vector3 car_pos = car->model.getTranslation();
-	//--------------SECTORES
+	/*--------------SECTORES
 	finnish = new PrefabEntity("finnish", Vector3(223, 4, 612), shader, 1);
 	finnish->model.scale(10, 2, 0.5);
 	finnish->mesh = Mesh::Get("data/cube.obj");
@@ -241,13 +255,13 @@ void PlayScene::setupScene(int window_width, int window_height) {
 	sector2->model.scale(10, 3, 0.5);
 	sector2->mesh = Mesh::Get("data/cube.obj");
 	sector2->layer = SECTOR2;
-	track->addChild(sector2);
+	track->addChild(sector2);*/
 
 	car->sectors[0] = false;
 	car->sectors[1] = false;
 	car->track_limits = true;
 
-	setupTrackLimits();
+	//setupTrackLimits();
 
 	//Mejor Time
 	std::ifstream archivo("data/tiempo.txt");
@@ -330,7 +344,7 @@ void PlayScene::renderScene() {
 	//Draw the floor grid
 	//drawGrid();
 	//Draw GUI
-	ui->drawMinimap(car, track);
+	//ui->drawMinimap(car, track);
 	ui->drawGUI();
 
 	//render the FPS, Draw Calls, etc
