@@ -90,6 +90,9 @@ bool Scene::parseScene(const char* filename, Shader* shader)
 			else {
 				new_entity->layer = TRACK;
 			}
+
+			if (mesh_name.find("_0groove_01") != std::string::npos) new_entity->minimap_render = true;
+			else new_entity->minimap_render = false;
 			// Add entity to scene root
 			track->addChild(new_entity);
 		}
@@ -160,8 +163,6 @@ bool Scene::parseCar(const char* filename, CarEntity* car ,Shader* shader)
 		else {
 			PrefabEntity* new_entity = new PrefabEntity(mesh_name.c_str(), Mesh::Get(mesh_name.c_str()), shader, render_data.texture);
 			new_entity->model = render_data.models[0];
-			Vector3 nodepos = new_entity->model.getTranslation();
-			new_entity->distance_to_camera = nodepos.distance(camera->eye);
 			// Add entity to scene root
 			car->addChild(new_entity);
 		}
@@ -344,7 +345,7 @@ void PlayScene::renderScene() {
 	//Draw the floor grid
 	//drawGrid();
 	//Draw GUI
-	//ui->drawMinimap(car, track);
+	ui->drawMinimap(car, track);
 	ui->drawGUI();
 
 	//render the FPS, Draw Calls, etc

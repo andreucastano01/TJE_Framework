@@ -22,6 +22,14 @@ void Entity::render(Camera* camera) {
 	}	
 }
 
+void Entity::minimaprender(Camera* camera) {
+	for (int i = 0; i < children.size(); i++) {
+		//cast to prefab to render
+		PrefabEntity* ent = (PrefabEntity*)children[i];
+		if (ent->minimap_render == true) ent->render(camera);
+	}
+}
+
 Matrix44 Entity::getGlobalMatrix() {
 	if (parent)
 		return model * parent->getGlobalMatrix();

@@ -56,7 +56,6 @@ public:
 	float scale;
 	// Pointer to parent
 	Entity* parent;
-	float distance_to_camera;
 
 	// Pointers to children
 	std::vector<Entity*> children;
@@ -64,6 +63,7 @@ public:
 	void addChild(Entity* child);
 	void removeChild(Entity* child);
 	void render(Camera* camera);
+	void minimaprender(Camera* camera);
 	virtual void update(float dt){}
 
 	Matrix44 getGlobalMatrix();
@@ -83,6 +83,7 @@ public:
 	Texture* texture;
 	Shader* shader;
 	Vector4 color;
+	bool minimap_render;
 
 	PrefabEntity(std::string name, Vector3 position, const char* meshf, const char* texturef, Shader* shader, float scale = 1);
 	PrefabEntity(std::string name, Mesh* mesh, Shader* shader, Texture* texture, float scale = 1);
