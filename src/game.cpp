@@ -107,6 +107,25 @@ void Game::onMouseButtonDown( SDL_MouseButtonEvent event )
 		mouse_locked = !mouse_locked;
 		SDL_ShowCursor(!mouse_locked);
 	}
+	if (event.button == SDL_BUTTON_LEFT) {
+		/*
+		// Check if the mouse click falls inside the button
+		//Mirar boton
+		if (mouseX >= button->x && mouseX <= button->x + button->width && mouseY >= button->y && mouseY <= button->y + button->height) {
+			if (button->isClicked) {
+				// Button is already clicked
+				button->isClicked = false;
+			}
+			else {
+				// Button was clicked in the previous frame
+				button->isClicked = true;
+				std::cout << "Button clicked!" << std::endl;
+			}
+		}
+		else {
+			button->isClicked = false;
+		}*/
+	}
 }
 
 void Game::onMouseButtonUp(SDL_MouseButtonEvent event)

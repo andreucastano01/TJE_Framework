@@ -136,3 +136,47 @@ void UI::drawGUI() {
 	drawVelocimeter();
 	drawTime();
 }
+
+
+//Renderizar bien el boton
+void UI::addButton(float x, float y, float width, float height, const char *name) {
+	// Render the button
+	Button* button = new Button(x, y, width, height);
+	Texture* texture = Texture::Get(name);
+
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	shader = Shader::Get("data/shaders/GUI.vs", "data/shaders/GUI.fs");
+	shader->enable();
+
+	shader->setUniform("u_viewprojection", camera2D.viewprojection_matrix);
+
+	Mesh quad;
+
+	// Three vertices of the 1st triangle
+	quad.vertices.push_back(Vector3(20, 200, 0));
+	quad.uvs.push_back(Vector2(0, 1));
+	quad.vertices.push_back(Vector3(20, 20, 0));
+	quad.uvs.push_back(Vector2(0, 0));
+	quad.vertices.push_back(Vector3(200, 20, 0));
+	quad.uvs.push_back(Vector2(1, 0));
+
+	// Three vertices of the 2nd triangle
+	quad.vertices.push_back(Vector3(20, 200, 0));
+	quad.uvs.push_back(Vector2(0, 1));
+	quad.vertices.push_back(Vector3(200, 20, 0));
+	quad.uvs.push_back(Vector2(1, 0));
+	quad.vertices.push_back(Vector3(200, 200, 0));
+	quad.uvs.push_back(Vector2(1, 1));
+
+	// Send info to shader to render
+	shader->setUniform("u_texture", texture, 0);
+
+	// Draw call
+	quad.render(GL_TRIANGLES);
+
+	shader->disable();
+}
