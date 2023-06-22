@@ -202,9 +202,9 @@ PlayScene::PlayScene(Camera* camera) : Scene(camera) {
 	skybox = CubemapFromHDRE("data/panorama.hdre");
 }
 
-
 void PlayScene::setupScene(int window_width, int window_height) {
 	this->window_height = window_height;
+
 	this->window_width = window_width;
 
 	ui = new UI(window_width, window_height);
@@ -239,30 +239,10 @@ void PlayScene::setupScene(int window_width, int window_height) {
 	parseCar("data/car2.scene", car ,shader);
 
 	Vector3 car_pos = car->model.getTranslation();
-	/*--------------SECTORES
-	finnish = new PrefabEntity("finnish", Vector3(223, 4, 612), shader, 1);
-	finnish->model.scale(10, 2, 0.5);
-	finnish->mesh = Mesh::Get("data/cube.obj");
-	finnish->layer = FINISH;
-	track->addChild(finnish);
-
-	sector1 = new PrefabEntity("sector1", Vector3(-192, 4, 468), shader, 1);
-	sector1->model.scale(10, 2, 0.5);
-	sector1->mesh = Mesh::Get("data/cube.obj");
-	sector1->layer = SECTOR1;
-	track->addChild(sector1);
-
-	sector2 = new PrefabEntity("sector2", Vector3(-132, 4, -702), shader, 1);
-	sector2->model.scale(10, 3, 0.5);
-	sector2->mesh = Mesh::Get("data/cube.obj");
-	sector2->layer = SECTOR2;
-	track->addChild(sector2);*/
 
 	car->sectors[0] = false;
 	car->sectors[1] = false;
 	car->track_limits = true;
-
-	//setupTrackLimits();
 
 	//Mejor Time
 	std::ifstream archivo("data/tiempo.txt");
@@ -294,9 +274,6 @@ void PlayScene::setupScene(int window_width, int window_height) {
 	// Play channel
 	//Audio::Play("data/sounds/DejaVu.wav");
 	//Audio::Play3D("data/sounds/F1_sonido.wav", Vector3(200, 0, 500));
-	Audio::Play("data/sounds/caster.wav");
-
-	t.start();
 }
 
 std::string formatTime(long long milliseconds) {
@@ -417,7 +394,7 @@ void PlayScene::update(float dt) {
 		Input::centerMouse();
 }
 
-void PlayScene::generateSkybox() {
+void Scene::generateSkybox() {
 	Mesh* mesh = Mesh::Get("data/sphere.obj");
 	Shader* shader = Shader::Get("data/shaders/basic.vs", "data/shaders/skybox.fs");
 	shader->enable();
@@ -560,45 +537,49 @@ bool PlayScene::checkCarCollisions(std::vector<sCollisionData>& collisions) {
 	// End loop
 
 	return !collisions.empty();
-
 }
 
-void PlayScene::setupTrackLimits() {
-	Vector3 positions[12] = {
-		Vector3(259, 4, 848),
-		Vector3(253, 4, 923),
-		Vector3(-38, 4, 726),
-		Vector3(-213, 4, 334),
-		Vector3(-277, 4, 297),
-		Vector3(-240, 4, -332),
-		Vector3(-232, 4, -379),
-		Vector3(-147, 4, -934),
-		Vector3(-152, 4, -987),
-		Vector3(-100, 4, -845),
-		Vector3(150, 4, 175),
-		Vector3(164, 4, 216)
-	};
+IntroScene::IntroScene(Camera* camera) : Scene(camera) {
+	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/phongobj.fs");
+	skybox = CubemapFromHDRE("data/panorama.hdre");
+	radius = 20.0f;
+	angle = 0.0f;
+}
 
-	Vector3 scales[12] = {
-		Vector3(25, 4, 20),
-		Vector3(20, 4, 9),
-		Vector3(5, 4, 1),
-		Vector3(8, 4, 1),
-		Vector3(3, 4, 8),
-		Vector3(20, 4, 8), //chicane antes de lo de kubica
-		Vector3(15, 4, 10),
-		Vector3(2, 4, 23), //horquilla
-		Vector3(20, 4, 14),
-		Vector3(3, 4, 3),
-		Vector3(7, 4, 7),
-		Vector3(12, 4, 11),
-	};			
+void IntroScene::setupScene(int window_width, int window_height) {
+	this->window_height = window_height;
+	this->window_width = window_width;
 
-	for(int i = 0; i < 12; i++) {
-		PrefabEntity* trackLimit = new PrefabEntity("trackLimit", positions[i], shader, 1);
-		//trackLimit->model.scale(scales[i]);
-		trackLimit->mesh = Mesh::Get("data/cube.obj");
-		trackLimit->layer = TRACK_LIMITS;
-		track->addChild(trackLimit);
-	}
+	ui = new UI(window_width, window_height);
+
+	parseScene("data/track.scene", shader);
+
+	Vector3 track_pos = track->model.getTranslation();
+
+	camera->lookAt(Vector3(200 + radius * sin(angle), 15.0, 500 + radius * cos(angle)), Vector3(track_pos.x, track_pos.y, track_pos.z), Vector3(0.f, 1.f, 0.f));
+	camera->setPerspective(70.f, window_width / (float)window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
+}
+
+void IntroScene::renderScene() {
+	glDisable(GL_BLEND);
+	glEnable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+
+	if (!shader)
+		return;
+
+	generateSkybox();
+
+	//root renderiza la pista
+	track->render(camera);
+
+	drawText(120, 100, "LA 33", Vector3(1, 1, 1), 20);
+	drawText(250, 500, "Clica para empezar", Vector3(1, 1, 1), 3);
+}
+
+void IntroScene::update(float dt) {
+	Vector3 track_pos = track->model.getTranslation();
+	angle += 0.001f;
+
+	camera->lookAt(Vector3(200 + radius * sin(angle), 15.0, 500 + radius * cos(angle)), Vector3(track_pos.x, track_pos.y, track_pos.z), Vector3(0.f, 1.f, 0.f));
 }

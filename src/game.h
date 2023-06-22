@@ -31,6 +31,7 @@ public:
 	std::vector<Entity*> entities;
 	Scene* current_scene;
 	PlayScene* play_scene;
+	IntroScene* intro_scene;
 
 	//some vars
 	Camera* camera; //our global camera

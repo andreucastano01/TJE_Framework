@@ -8,6 +8,7 @@
 #include "animation.h"
 
 #include <cmath>
+#include "audio.h"
 
 //some globals
 Mesh* mesh = NULL;
@@ -40,9 +41,12 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 	texture = new Texture();
  	//texture->load("data/texture.tga");
 	camera = new Camera();
+	intro_scene = new IntroScene(camera);
+	intro_scene->setupScene(window_width, window_height);
+
 	play_scene = new PlayScene(camera);
-	play_scene -> setupScene(window_width, window_height);
-	current_scene = play_scene;
+	play_scene->setupScene(window_width, window_height);
+	current_scene = intro_scene;
 
 	minimapCamera = new Camera();
 	//minimapCamera.setPerspective(0, window_width, 0, window_height, 0.1f, 10000.f);
@@ -107,24 +111,14 @@ void Game::onMouseButtonDown( SDL_MouseButtonEvent event )
 		mouse_locked = !mouse_locked;
 		SDL_ShowCursor(!mouse_locked);
 	}
-	if (event.button == SDL_BUTTON_LEFT) {
-		/*
-		// Check if the mouse click falls inside the button
-		//Mirar boton
-		if (mouseX >= button->x && mouseX <= button->x + button->width && mouseY >= button->y && mouseY <= button->y + button->height) {
-			if (button->isClicked) {
-				// Button is already clicked
-				button->isClicked = false;
-			}
-			else {
-				// Button was clicked in the previous frame
-				button->isClicked = true;
-				std::cout << "Button clicked!" << std::endl;
-			}
+	if (event.button == SDL_BUTTON_LEFT && current_scene == intro_scene) {
+
+		if (event.x >= 0 && event.x <= window_width && event.y >= 0 && event.y <= window_height) {
+			current_scene = play_scene;
+			Audio::Play("data/sounds/caster.wav");
+
+			play_scene->t.start();
 		}
-		else {
-			button->isClicked = false;
-		}*/
 	}
 }
 

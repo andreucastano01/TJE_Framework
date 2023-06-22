@@ -22,12 +22,14 @@ public:
 	Camera* camera;
 	Entity* track;
 	timer t;
+	Texture* skybox;
 	std::map<std::string, sRenderData> meshes_to_load;
 	Scene(Camera* camera);
 	virtual void renderScene(){}
 	virtual void update(float dt){}
 	bool parseScene(const char* filename, Shader* shader);
 	bool parseCar(const char* filename,CarEntity* car, Shader* shader);
+	void generateSkybox();
 };
 
 class PlayScene : public Scene 
@@ -35,7 +37,6 @@ class PlayScene : public Scene
 public:
 	CarEntity* car;
 	Shader* shader;
-	Texture* skybox;
 	float angle;
 	float mouse_speed;
 	bool mouse_locked;
@@ -51,12 +52,26 @@ public:
 
 	PlayScene(Camera* camera);
 
-	void generateSkybox();
 	void setupScene(int window_width, int window_height);
 	void renderScene();
 	void update(float dt);
 	bool checkCarCollisions(std::vector<sCollisionData>& collisions);
 	void setupTrackLimits();
 	void guardarTiempos();
+};
+
+class IntroScene : public Scene {
+public:
+	Shader* shader;
+	int window_width;
+	int window_height;
+	UI* ui;
+	float radius;
+	float angle;
+
+	IntroScene(Camera* camera);
+	void setupScene(int window_width, int window_height);
+	void renderScene();
+	void update(float dt);
 };
 
