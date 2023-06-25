@@ -356,23 +356,23 @@ void PlayScene::update(float dt) {
 	Vector3 prevPos = car->model.getTranslation();
 	//async input to move the camera around
 	//if (Input::isKeyPressed(SDL_SCANCODE_LSHIFT)) speed *= 10; //move faster with left shift
-	if (Input::isKeyPressed(SDL_SCANCODE_W) || Input::isKeyPressed(SDL_SCANCODE_UP)) {
+	if (Input::isKeyPressed(SDL_SCANCODE_W) || Input::isKeyPressed(SDL_SCANCODE_UP) || Input::gamepads[0].isButtonPressed(RF_BUTTON)) {
 		dir++;
 	}
-	if (Input::isKeyPressed(SDL_SCANCODE_S) || Input::isKeyPressed(SDL_SCANCODE_DOWN)) {
+	if (Input::isKeyPressed(SDL_SCANCODE_S) || Input::isKeyPressed(SDL_SCANCODE_DOWN) || Input::gamepads[0].isButtonPressed(LF_BUTTON)) {
 		dir--;
 	}
-	if (Input::isKeyPressed(SDL_SCANCODE_A) || Input::isKeyPressed(SDL_SCANCODE_LEFT)) {
+	if (Input::isKeyPressed(SDL_SCANCODE_A) || Input::isKeyPressed(SDL_SCANCODE_LEFT) || Input::gamepads[0].direction & PAD_LEFT) {
 		//camera->move(Vector3(1.0f, 0.0f, 0.0f) * speed);
 		turn++;
 	}
-	if (Input::isKeyPressed(SDL_SCANCODE_D) || Input::isKeyPressed(SDL_SCANCODE_RIGHT)) {
+	if (Input::isKeyPressed(SDL_SCANCODE_D) || Input::isKeyPressed(SDL_SCANCODE_RIGHT) || Input::gamepads[0].direction & PAD_RIGHT) {
 		turn--;
 	}
-	if (Input::isKeyPressed(SDL_SCANCODE_R) || Input::isKeyPressed(SDL_SCANCODE_RIGHT)) {
+	if (Input::isKeyPressed(SDL_SCANCODE_R) || Input::gamepads[0].isButtonPressed(X_BUTTON)) {
 		car->goBackwards();
 	}
-	if (Input::isKeyPressed(SDL_SCANCODE_F) || Input::isKeyPressed(SDL_SCANCODE_RIGHT)) {
+	if (Input::isKeyPressed(SDL_SCANCODE_F) || Input::gamepads[0].isButtonPressed(Y_BUTTON)) {
 		car->goForwards();
 	}
 	car->move(dir, turn, dt, camera);
