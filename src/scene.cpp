@@ -7,6 +7,7 @@
 #include <iomanip>
 #include "audio.h"
 #include <algorithm>
+#include "game.h"
 
 Scene::Scene(Camera* camera) {
 	this->camera = camera;
@@ -311,7 +312,6 @@ void PlayScene::renderScene() {
 		return;
 
 	generateSkybox();
-
 	
 	//root renderiza la pista
 	track->render(camera);
@@ -362,7 +362,6 @@ void PlayScene::update(float dt) {
 		dir--;
 	}
 	if (Input::isKeyPressed(SDL_SCANCODE_A) || Input::isKeyPressed(SDL_SCANCODE_LEFT) || Input::gamepads[0].direction & PAD_LEFT) {
-		//camera->move(Vector3(1.0f, 0.0f, 0.0f) * speed);
 		turn++;
 	}
 	if (Input::isKeyPressed(SDL_SCANCODE_D) || Input::isKeyPressed(SDL_SCANCODE_RIGHT) || Input::gamepads[0].direction & PAD_RIGHT) {
@@ -494,7 +493,6 @@ bool PlayScene::checkCarCollisions(std::vector<sCollisionData>& collisions) {
 			}
 
 			if (e->layer == FINISH) {
-				std::cout << car->sectors[0] << car->sectors[1] << car->track_limits << std::endl;
 				t.stop();
 				//Si se completa la vuelta correctamente
 				if (car->sectors[0] == true && car->sectors[1] == true && car->track_limits == false) {
@@ -514,25 +512,15 @@ bool PlayScene::checkCarCollisions(std::vector<sCollisionData>& collisions) {
 			}
 			else if (e->layer == SECTOR1) {
 				if (car->sectors[0] == false) car->sectors[0] = true;
-				std::cout << "Sector 1" << std::endl;
 			}
 			else if (e->layer == SECTOR2) {
 				if (car->sectors[1] == false && car->sectors[0] == true) car->sectors[1] = true;
-				std::cout << "Sector 2" << std::endl;
 			}
 			else if (e->layer == TRACK_LIMITS) {
 				car->track_limits = true;
 			}
 			else {
 				collisions.push_back({ colPoint, colNormal, WALL });
-				/*
-				Vector3& velocity = player->velocity;
-				Vector3 newDir = velocity.dot(collisionNormal);
-				newDir *= collisionNormal;
-
-				velocity.x -= newDir.x;
-				velocity.z -= newDir.z;
-				*/
 			}
 		}		
 	}
@@ -576,7 +564,8 @@ void IntroScene::renderScene() {
 	track->render(camera);
 
 	drawText(120, 100, "LA 33", Vector3(1, 1, 1), 20);
-	drawText(250, 500, "Clica para empezar", Vector3(1, 1, 1), 3);
+	if(SDL_NumJoysticks() > 0) drawText(240, 500, "Pulsa A para empezar", Vector3(1, 1, 1), 3);
+	else drawText(250, 500, "Clica para empezar", Vector3(1, 1, 1), 3);
 }
 
 void IntroScene::update(float dt) {
@@ -584,4 +573,8 @@ void IntroScene::update(float dt) {
 	angle += 0.001f;
 
 	camera->lookAt(Vector3(200 + radius * sin(angle), 15.0, 500 + radius * cos(angle)), Vector3(track_pos.x, track_pos.y, track_pos.z), Vector3(0.f, 1.f, 0.f));
+
+	if (Input::gamepads[0].isButtonPressed(A_BUTTON)) {
+		Game::instance->current_scene = Game::instance->play_scene;
+	}
 }
