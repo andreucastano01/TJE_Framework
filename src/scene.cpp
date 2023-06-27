@@ -494,6 +494,7 @@ bool PlayScene::checkCarCollisions(std::vector<sCollisionData>& collisions) {
 			}
 
 			if (e->layer == FINISH) {
+				std::cout << car->sectors[0] << car->sectors[1] << car->track_limits << std::endl;
 				t.stop();
 				//Si se completa la vuelta correctamente
 				if (car->sectors[0] == true && car->sectors[1] == true && car->track_limits == false) {
@@ -513,9 +514,11 @@ bool PlayScene::checkCarCollisions(std::vector<sCollisionData>& collisions) {
 			}
 			else if (e->layer == SECTOR1) {
 				if (car->sectors[0] == false) car->sectors[0] = true;
+				std::cout << "Sector 1" << std::endl;
 			}
 			else if (e->layer == SECTOR2) {
 				if (car->sectors[1] == false && car->sectors[0] == true) car->sectors[1] = true;
+				std::cout << "Sector 2" << std::endl;
 			}
 			else if (e->layer == TRACK_LIMITS) {
 				car->track_limits = true;
