@@ -7,6 +7,7 @@ UI::UI(int window_width, int window_height) {
 	camera2D.view_matrix = Matrix44(); // Set View to identity
 	camera2D.setOrthographic(0, window_width, 0, window_height, -1, 1);
 	velocimeter = Texture::Get("data/velocimeter.png");
+	fuego = Texture::Get("data/fuego.png");
 }
 
 void UI::drawVelocimeter() {
@@ -177,6 +178,77 @@ void UI::addButton(float x, float y, float width, float height, const char *name
 
 	// Draw call
 	quad.render(GL_TRIANGLES);
+
+	shader->disable();
+}
+
+void UI::gameOver() {
+	
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	/*
+	shader = Shader::Get("data/shaders/GUI.vs", "data/shaders/GUI.fs");
+	shader->enable();
+
+	shader->setUniform("u_viewprojection", camera2D.viewprojection_matrix);
+
+	Mesh quad;
+
+	// Three vertices of the 1st triangle
+	quad.vertices.push_back(Vector3(window_width / 2 - 30, window_height / 2 - 30, 0));
+	quad.uvs.push_back(Vector2(0, 1));
+	quad.vertices.push_back(Vector3(window_width / 2 - 30, window_height / 2 - 100, 0));
+	quad.uvs.push_back(Vector2(0, 0));
+	quad.vertices.push_back(Vector3(window_width / 2 + 30, window_height / 2 - 100, 0));
+	quad.uvs.push_back(Vector2(1, 0));
+
+	// Three vertices of the 2nd triangle
+	quad.vertices.push_back(Vector3(window_width / 2 - 30, window_height / 2 - 30, 0));
+	quad.uvs.push_back(Vector2(0, 1));
+	quad.vertices.push_back(Vector3(window_width / 2 + 30, window_height / 2 - 100, 0));
+	quad.uvs.push_back(Vector2(1, 0));
+	quad.vertices.push_back(Vector3(window_width / 2 + 30, window_height / 2 - 30, 0));
+	quad.uvs.push_back(Vector2(1, 1));
+
+	// Send info to shader to render
+	shader->setUniform("u_texture", fuego, 0);
+
+	// Draw call
+	quad.render(GL_TRIANGLES);
+
+	shader->disable();
+	*/
+
+	shader = Shader::Get("data/shaders/GUI.vs", "data/shaders/flat.fs");
+	shader->enable();
+
+	shader->setUniform("u_viewprojection", camera2D.viewprojection_matrix);
+
+	Mesh quadtwo;
+
+	// Three vertices of the 1st triangle
+	quadtwo.vertices.push_back(Vector3(0, window_height, 0));
+	quadtwo.uvs.push_back(Vector2(0, 1));
+	quadtwo.vertices.push_back(Vector3(0, 0, 0));
+	quadtwo.uvs.push_back(Vector2(0, 0));
+	quadtwo.vertices.push_back(Vector3(window_width, 0, 0));
+	quadtwo.uvs.push_back(Vector2(1, 0));
+
+	// Three vertices of the 2nd triangle
+	quadtwo.vertices.push_back(Vector3(0, window_height, 0));
+	quadtwo.uvs.push_back(Vector2(0, 1));
+	quadtwo.vertices.push_back(Vector3(window_width, 0, 0));
+	quadtwo.uvs.push_back(Vector2(1, 0));
+	quadtwo.vertices.push_back(Vector3(window_width, window_height, 0));
+	quadtwo.uvs.push_back(Vector2(1, 1));
+
+	shader->setUniform("u_color", Vector4(0.6f, 0.0f, 0.0f, 0.4f));
+
+	// Draw call
+	quadtwo.render(GL_TRIANGLES);
 
 	shader->disable();
 }

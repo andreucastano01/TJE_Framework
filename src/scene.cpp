@@ -9,6 +9,10 @@
 #include "game.h"
 #include <algorithm>
 #include "game.h"
+#include <chrono>
+#include <thread>
+
+HCHANNEL channel;
 
 Scene::Scene(Camera* camera) {
 	this->camera = camera;
@@ -388,8 +392,9 @@ void PlayScene::update(float dt) {
 				car->speed = 0;
 				Audio::Stop(Game::instance->channel);
 
-				Audio::Play("data/sounds/crash.wav");
+				channel = Audio::Play("data/sounds/crash.wav");
 				//TODO trigger game over
+				Game::instance->current_scene = Game::instance->game_over;
 			}
 		}
 	}
@@ -529,9 +534,6 @@ bool PlayScene::checkCarCollisions(std::vector<sCollisionData>& collisions) {
 			}
 			else {
 				collisions.push_back({ colPoint, colNormal, WALL });
-				//std::cout << cos(90) << std::endl;
-				//double newDir = vec3(cos(car->angle * DEG2RAD), 0, sin(car->angle * DEG2RAD)).dot(colNormal);
-				//car->angle +=newDir;
 			}
 		}		
 	}
@@ -585,7 +587,61 @@ void IntroScene::update(float dt) {
 
 	camera->lookAt(Vector3(200 + radius * sin(angle), 15.0, 500 + radius * cos(angle)), Vector3(track_pos.x, track_pos.y, track_pos.z), Vector3(0.f, 1.f, 0.f));
 
-	if (Input::gamepads[0].isButtonPressed(A_BUTTON)) {
+	if (Input::gamepads[0].isButtonPressed(A_BUTTON) && Game::instance->gamepadisPressed == false) {
 		Game::instance->current_scene = Game::instance->play_scene;
+		Game::instance->channel = Audio::Play("data/sounds/caster.wav");
+
+		Game::instance->play_scene->t.start();
 	}
+	if (!Input::gamepads[0].isButtonPressed(A_BUTTON)) 	Game::instance->gamepadisPressed = false;
+}
+
+GameOverScene::GameOverScene(Camera* camera) : Scene(camera) {
+	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/phongobj.fs");
+	skybox = CubemapFromHDRE("data/panorama.hdre");
+}
+
+void GameOverScene::setupScene(int window_width, int window_height) {
+	this->window_height = window_height;
+	this->window_width = window_width;
+
+	ui = new UI(window_width, window_height);
+
+	parseScene("data/track.scene", shader);
+}
+
+void GameOverScene::renderScene() {
+	glDisable(GL_BLEND);
+	glEnable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+
+	if (!shader)
+		return;
+
+	generateSkybox();
+
+	//root renderiza la pista
+	track->render(camera);
+
+	ui->gameOver();
+
+	drawText(120, 100, "Game Over", Vector3(1, 1, 1), 10);
+	if (SDL_NumJoysticks() > 0) drawText(240, 500, "Pulsa A para volver", Vector3(1, 1, 1), 3);
+	else drawText(250, 500, "Clica para volver", Vector3(1, 1, 1), 3);
+}
+
+void GameOverScene::update(float dt) {
+	if (Input::gamepads[0].isButtonPressed(A_BUTTON) && Game::instance->gamepadisPressed == false) {
+		Game::instance->gamepadisPressed = true;
+		Game::instance->camera = new Camera();
+		Game::instance->play_scene = new PlayScene(Game::instance->camera);
+		Game::instance->play_scene->setupScene(window_width, window_height);
+		Audio::Stop(channel);
+		Game::instance->current_scene = Game::instance->intro_scene;
+	}
+	if (!Input::gamepads[0].isButtonPressed(A_BUTTON)) 	Game::instance->gamepadisPressed = false;
+}
+
+void GameOverScene::stopAudio() {
+	Audio::Stop(channel);
 }

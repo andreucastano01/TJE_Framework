@@ -34,6 +34,7 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 	time = 0.0f;
 	elapsed_time = 0.0f;
 	mouse_locked = false;
+	gamepadisPressed = false;
 
 	//OpenGL flags
 	glEnable( GL_CULL_FACE ); //render both sides of every triangle
@@ -49,6 +50,9 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 	play_scene = new PlayScene(camera);
 	play_scene->setupScene(window_width, window_height);
 	current_scene = intro_scene;
+
+	game_over = new GameOverScene(camera);
+	game_over->setupScene(window_width, window_height);
 
 	minimapCamera = new Camera();
 	//minimapCamera.setPerspective(0, window_width, 0, window_height, 0.1f, 10000.f);
@@ -114,12 +118,20 @@ void Game::onMouseButtonDown( SDL_MouseButtonEvent event )
 		SDL_ShowCursor(!mouse_locked);
 	}
 	if (event.button == SDL_BUTTON_LEFT && current_scene == intro_scene) {
-
 		if (event.x >= 0 && event.x <= window_width && event.y >= 0 && event.y <= window_height) {
 			current_scene = play_scene;
 			channel = Audio::Play("data/sounds/caster.wav");
 
 			play_scene->t.start();
+		}
+	}
+	if (event.button == SDL_BUTTON_LEFT && current_scene == game_over) {
+		if (event.x >= 0 && event.x <= window_width && event.y >= 0 && event.y <= window_height) {
+			camera = new Camera();
+			play_scene = new PlayScene(Game::instance->camera);
+			play_scene->setupScene(window_width, window_height);
+			current_scene = intro_scene;
+			game_over->stopAudio();
 		}
 	}
 }

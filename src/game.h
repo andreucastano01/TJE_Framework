@@ -32,7 +32,9 @@ public:
 	Scene* current_scene;
 	PlayScene* play_scene;
 	IntroScene* intro_scene;
+	GameOverScene* game_over;
 	HCHANNEL channel;
+	bool gamepadisPressed;
 
 	//some vars
 	Camera* camera; //our global camera

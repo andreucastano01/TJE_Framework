@@ -22,6 +22,7 @@ public:
 
 	Shader* shader;
 	Texture* velocimeter;
+	Texture* fuego;
 	Camera camera2D;
 
 	void drawGUI();
@@ -29,4 +30,5 @@ public:
 	void drawTime();
 	void drawMinimap(CarEntity* car, Entity* track);
 	void addButton(float x, float y, float width, float height, const char* name);
+	void gameOver();
 };
