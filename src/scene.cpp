@@ -389,7 +389,7 @@ void PlayScene::update(float dt) {
 				Audio::Stop(Game::instance->channel);
 
 				Audio::Play("data/sounds/crash.wav");
-				//TODO trigger game over
+				
 			}
 		}
 	}
@@ -529,9 +529,6 @@ bool PlayScene::checkCarCollisions(std::vector<sCollisionData>& collisions) {
 			}
 			else {
 				collisions.push_back({ colPoint, colNormal, WALL });
-				//std::cout << cos(90) << std::endl;
-				//double newDir = vec3(cos(car->angle * DEG2RAD), 0, sin(car->angle * DEG2RAD)).dot(colNormal);
-				//car->angle +=newDir;
 			}
 		}		
 	}
@@ -588,4 +585,82 @@ void IntroScene::update(float dt) {
 	if (Input::gamepads[0].isButtonPressed(A_BUTTON)) {
 		Game::instance->current_scene = Game::instance->play_scene;
 	}
+}
+
+CarSetupScene::CarSetupScene(Camera* camera) : Scene(camera) {
+	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/phongobj.fs");
+	skybox = CubemapFromHDRE("data/panorama.hdre");
+	
+}
+
+void CarSetupScene::setupScene(int window_width, int window_height) {
+	this->window_height = window_height;
+	this->window_width = window_width;
+
+	ui = new UI(window_width, window_height);
+
+	parseScene("data/track.scene", shader);
+
+	Vector3 track_pos = track->model.getTranslation();
+
+	camera->setPerspective(70.f, window_width / (float)window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
+
+	start_racing = new Button(window_width / 2, (window_height / 2) + 200, 100, 50, "Start!");
+	add_downforce = new Button((window_width / 2) + 75, window_height / 2, 100, 50, "More Downforce");
+	remove_downforce = new Button((window_width / 2) - 75, window_height / 2, 100, 50, "Less Downforce");
+	toggle_camera = new Button(window_width / 2, (window_height / 2)+100, 100, 50, "Change Camera");
+}
+
+void CarSetupScene::renderScene() {
+	glDisable(GL_BLEND);
+	glEnable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+
+	if (!shader)
+		return;
+
+	generateSkybox();
+
+	//root renderiza la pista
+	track->render(camera);
+
+	//drawText(120, 100, "LA 33", Vector3(1, 1, 1), 20);
+	ui->renderButton(start_racing);
+	ui->renderButton(add_downforce);
+	ui->renderButton(remove_downforce);
+	ui->renderButton(toggle_camera);
+	//if (SDL_NumJoysticks() > 0) drawText(240, 500, "Pulsa A para empezar", Vector3(1, 1, 1), 3);
+	//else drawText(250, 500, "Clica para empezar", Vector3(1, 1, 1), 3);
+}
+
+void CarSetupScene::update(float dt) {
+	camera->lookAt(Vector3(200, 15, 498), Vector3(220, 3, 500), Vector3(0.f, 1.f, 0.f));
+	
+	if (Input::isMousePressed(SDL_BUTTON(1)) && oneClick) {
+		oneClick = false;
+		Vector2 mousePos = Input::mouse_position;
+		std::cout << mousePos.x << " " << mousePos.y<< std::endl;
+		if (start_racing) {
+			
+			if (start_racing->checkClick(mousePos.x, mousePos.y)) {
+
+			}
+			if (add_downforce->checkClick(mousePos.x, mousePos.y)) {
+
+			}
+			if (remove_downforce->checkClick(mousePos.x, mousePos.y)) {
+
+			}
+			if (toggle_camera->checkClick(mousePos.x, mousePos.y)) {
+
+			}
+		}
+	}
+	if (!Input::isMousePressed(SDL_BUTTON(1)))
+		oneClick = true;
+
+	if (Input::gamepads[0].isButtonPressed(A_BUTTON)) {
+		Game::instance->current_scene = Game::instance->play_scene;
+	}
+
 }

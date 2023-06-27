@@ -73,3 +73,20 @@ public:
 	void update(float dt);
 };
 
+class CarSetupScene : public Scene {
+public:
+	Shader* shader;
+	UI* ui;
+	Button* start_racing;
+	Button* add_downforce;
+	Button* remove_downforce;
+	Button* toggle_camera;
+	bool oneClick = true;
+	bool first_person_camera = false;
+	float downforce = 1;
+
+	CarSetupScene(Camera* camera);
+	void setupScene(int window_width, int window_height);
+	void renderScene();
+	void update(float dt);
+};

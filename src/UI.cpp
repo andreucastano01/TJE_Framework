@@ -139,10 +139,8 @@ void UI::drawGUI() {
 
 
 //Renderizar bien el boton
-void UI::addButton(float x, float y, float width, float height, const char *name) {
+void UI::renderButton(Button* button) {
 	// Render the button
-	Button* button = new Button(x, y, width, height);
-	Texture* texture = Texture::Get(name);
 
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_CULL_FACE);
@@ -155,28 +153,22 @@ void UI::addButton(float x, float y, float width, float height, const char *name
 	shader->setUniform("u_viewprojection", camera2D.viewprojection_matrix);
 
 	Mesh quad;
-
-	// Three vertices of the 1st triangle
-	quad.vertices.push_back(Vector3(20, 200, 0));
-	quad.uvs.push_back(Vector2(0, 1));
-	quad.vertices.push_back(Vector3(20, 20, 0));
-	quad.uvs.push_back(Vector2(0, 0));
-	quad.vertices.push_back(Vector3(200, 20, 0));
-	quad.uvs.push_back(Vector2(1, 0));
-
-	// Three vertices of the 2nd triangle
-	quad.vertices.push_back(Vector3(20, 200, 0));
-	quad.uvs.push_back(Vector2(0, 1));
-	quad.vertices.push_back(Vector3(200, 20, 0));
-	quad.uvs.push_back(Vector2(1, 0));
-	quad.vertices.push_back(Vector3(200, 200, 0));
-	quad.uvs.push_back(Vector2(1, 1));
+	quad.createQuad(button->x, Game::instance->window_height - button->y,button->width,button->height,false);
 
 	// Send info to shader to render
-	shader->setUniform("u_texture", texture, 0);
+	shader->setUniform("u_texture", Texture::getBlackTexture(), 0);
 
 	// Draw call
 	quad.render(GL_TRIANGLES);
 
 	shader->disable();
+	drawText(button->x-40, button->y-5, button->text, vec3(1,1,1), 1);
+}
+
+bool Button::checkClick(float mouse_x, float mouse_y) {	
+	if (x-width/2 < mouse_x && y-height/2 < mouse_y && mouse_x < x+width/2 && mouse_y < y + height/2) {
+		std::cout << "clicked on button" << std::endl;
+		return true;
+	}
+	return false;
 }

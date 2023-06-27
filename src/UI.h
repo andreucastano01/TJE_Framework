@@ -8,10 +8,14 @@
 struct Button {
 	float x, y;
 	float width, height;
-	bool isClicked;
+	std::string text;
 
-	Button(float _x, float _y, float _width, float _height)
-		: x(_x), y(_y), width(_width), height(_height), isClicked(false) {}
+
+	Button(float _x, float _y, float _width, float _height, std::string _text)
+		: x(_x), y(_y), width(_width), height(_height), text(_text) {}
+
+	bool checkClick(float x, float y);
+	
 };
 
 class UI {
@@ -28,5 +32,5 @@ public:
 	void drawVelocimeter();
 	void drawTime();
 	void drawMinimap(CarEntity* car, Entity* track);
-	void addButton(float x, float y, float width, float height, const char* name);
+	void renderButton(Button* button);
 };

@@ -32,6 +32,8 @@ public:
 	Scene* current_scene;
 	PlayScene* play_scene;
 	IntroScene* intro_scene;
+	CarSetupScene* car_setup_scene;
+
 	HCHANNEL channel;
 
 	//some vars
