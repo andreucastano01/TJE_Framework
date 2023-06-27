@@ -19,7 +19,6 @@ Texture* texture = NULL;
 Shader* shader = NULL;
 Animation* anim = NULL;
 FBO* fbo = NULL;
-
 Game* Game::instance = NULL;
 
 Game::Game(int window_width, int window_height, SDL_Window* window)
@@ -118,7 +117,7 @@ void Game::onMouseButtonDown( SDL_MouseButtonEvent event )
 
 		if (event.x >= 0 && event.x <= window_width && event.y >= 0 && event.y <= window_height) {
 			current_scene = play_scene;
-			Audio::Play("data/sounds/caster.wav");
+			channel = Audio::Play("data/sounds/caster.wav");
 
 			play_scene->t.start();
 		}

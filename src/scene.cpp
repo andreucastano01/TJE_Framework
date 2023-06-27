@@ -6,6 +6,7 @@
 #include <map>
 #include <iomanip>
 #include "audio.h"
+#include "game.h"
 #include <algorithm>
 #include "game.h"
 
@@ -215,17 +216,17 @@ void PlayScene::setupScene(int window_width, int window_height) {
 	//speed values
 	//los parametros se pasan dentro de dos structs para tener constructores mas sencillos
 	sSpeedParameters sp = sSpeedParameters();
-	sp.max_speed = 60;
-	sp.max_acceleration = 10.5f;
-	sp.max_bracking = 20.5;
+	sp.max_speed = 65;
+	sp.max_acceleration = 6.5f;
+	sp.max_bracking = 15.5;
 	sp.downforce = 2.2;
 
 	sTurningParameters tp = sTurningParameters();
 	tp.max_angle = 30;
 	tp.turning_acceleration = 4;
-	tp.max_turn_speed = 1.1f;
+	tp.max_turn_speed = .6f;
 	tp.centering_acceleration = 0.1;
-	tp.turning_speed_mult = 1.4f;
+	tp.turning_speed_mult = 2.0f;
 
 	car = new CarEntity(
 		"car", 
@@ -382,8 +383,14 @@ void PlayScene::update(float dt) {
 		{
 			if(collision.type == FLOOR)
 				car->model.setPosition(current_car_pos.x, collisions[0].colPoint.y+1, current_car_pos.z);
-			if (collision.type == WALL)
+			if (collision.type == WALL) {
 				car->model.setPosition(prevPos.x, prevPos.y, prevPos.z);
+				car->speed = 0;
+				Audio::Stop(Game::instance->channel);
+
+				Audio::Play("data/sounds/crash.wav");
+				//TODO trigger game over
+			}
 		}
 	}
 	//std::cout << current_car_pos.x << " " << current_car_pos.y << " " << current_car_pos.z << std::endl;
@@ -470,7 +477,7 @@ bool PlayScene::checkCarCollisions(std::vector<sCollisionData>& collisions) {
 	float sphereRadius = 3.f;
 	Vector3 colPoint, colNormal;
 	float colisionDisatance = 1.0f;
-	// For each collider entity “e” in root:
+	// For each collider entity ï¿½eï¿½ in root:
 	for each (PrefabEntity* e in track->children)
 	{
 		Mesh* mesh = e->mesh;
@@ -518,9 +525,13 @@ bool PlayScene::checkCarCollisions(std::vector<sCollisionData>& collisions) {
 			}
 			else if (e->layer == TRACK_LIMITS) {
 				car->track_limits = true;
+				
 			}
 			else {
 				collisions.push_back({ colPoint, colNormal, WALL });
+				//std::cout << cos(90) << std::endl;
+				//double newDir = vec3(cos(car->angle * DEG2RAD), 0, sin(car->angle * DEG2RAD)).dot(colNormal);
+				//car->angle +=newDir;
 			}
 		}		
 	}

@@ -143,16 +143,16 @@ void CarEntity::move(int direction, int turn, float dt, Camera* camera) {
 	//if reversing make acceleation fo back and break go front
 	float flipSides = !is_reversing ? 1 : -1;
 	if (direction == 1 * flipSides) {
-		speed += sp.max_acceleration * dt;
+		speed += (sp.max_acceleration - sp.downforce - min(0,speed/sp.downforce)) * dt;
 	}
 	else if (direction == -1 * flipSides) {
-		speed -= sp.max_bracking * dt;
+		speed -= (sp.max_bracking + sp.downforce) * dt;
 	}
 	else if(direction == 0 && speed != 0) {
 		//if no input slowly stop the car
 
 		float deceleration_direction = copysign(1.0, speed);
-		speed += -deceleration_direction * sp.downforce * dt;
+		speed += -deceleration_direction * sp.downforce*2 * dt;
 		if (abs(speed) < 0.01)
 			speed = 0;
 	}

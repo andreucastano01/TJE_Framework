@@ -32,6 +32,7 @@ public:
 	Scene* current_scene;
 	PlayScene* play_scene;
 	IntroScene* intro_scene;
+	HCHANNEL channel;
 
 	//some vars
 	Camera* camera; //our global camera
