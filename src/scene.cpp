@@ -51,10 +51,9 @@ bool Scene::parseScene(const char* filename, Shader* shader)
 		mesh_count++;
 	}
 
-
+	int progress = 0;
 	// Iterate through meshes loaded and create corresponding entities
 	for (auto data : meshes_to_load) {
-
 		mesh_name = "data/" + data.first;
 		sRenderData& render_data = data.second;
 

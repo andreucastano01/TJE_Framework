@@ -10,6 +10,9 @@
 #include <cmath>
 #include "audio.h"
 
+#include <GL/glut.h>
+#include <thread>
+
 //some globals
 Mesh* mesh = NULL;
 Texture* texture = NULL;

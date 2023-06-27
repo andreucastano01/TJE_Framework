@@ -23,6 +23,8 @@ public:
 	Entity* track;
 	timer t;
 	Texture* skybox;
+	int window_width;
+	int window_height;
 	std::map<std::string, sRenderData> meshes_to_load;
 	Scene(Camera* camera);
 	virtual void renderScene(){}
@@ -40,8 +42,6 @@ public:
 	float angle;
 	float mouse_speed;
 	bool mouse_locked;
-	int window_width;
-	int window_height;
 	UI* ui;
 	PrefabEntity *finnish, *sector1, *sector2;
 	long long best_time;
@@ -63,8 +63,6 @@ public:
 class IntroScene : public Scene {
 public:
 	Shader* shader;
-	int window_width;
-	int window_height;
 	UI* ui;
 	float radius;
 	float angle;
