@@ -122,10 +122,7 @@ void Game::onMouseButtonDown( SDL_MouseButtonEvent event )
 
 		if (false) {
 			current_scene = play_scene;
-			Audio::Stop(channel);
-			channel = Audio::Play("data/sounds/caster.wav");
-
-			play_scene->t.start();
+			
 		}
 	}
 	if (event.button == SDL_BUTTON_LEFT && current_scene == intro_scene) {

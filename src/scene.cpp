@@ -340,6 +340,9 @@ void PlayScene::renderScene() {
 }
 
 void PlayScene::update(float dt) {
+	car->setDownforce(Game::instance->car_setup_scene->downforce);
+
+
 	float speed = dt * mouse_speed; //the speed is defined by the seconds_elapsed so it goes constant
 
 	//mouse input to rotate the cam
@@ -374,7 +377,7 @@ void PlayScene::update(float dt) {
 	if (Input::isKeyPressed(SDL_SCANCODE_F) || Input::gamepads[0].isButtonPressed(Y_BUTTON)) {
 		car->goForwards();
 	}
-	car->move(dir, turn, dt, camera);
+	car->move(dir, turn, dt, camera, Game::instance->car_setup_scene->first_person_camera);
 	std::vector<sCollisionData> collisions = std::vector<sCollisionData>();
 	checkCarCollisions(collisions);
 	Vector3 current_car_pos = car->getPosition();
@@ -624,11 +627,12 @@ void CarSetupScene::renderScene() {
 	//root renderiza la pista
 	track->render(camera);
 
-	//drawText(120, 100, "LA 33", Vector3(1, 1, 1), 20);
 	ui->renderButton(start_racing);
 	ui->renderButton(add_downforce);
 	ui->renderButton(remove_downforce);
 	ui->renderButton(toggle_camera);
+
+	drawText(window_width / 2 + 120, (window_height / 2), first_person_camera ? "first Person" : "third Person", Vector3(0), 1);
 	//if (SDL_NumJoysticks() > 0) drawText(240, 500, "Pulsa A para empezar", Vector3(1, 1, 1), 3);
 	//else drawText(250, 500, "Clica para empezar", Vector3(1, 1, 1), 3);
 }
@@ -641,18 +645,21 @@ void CarSetupScene::update(float dt) {
 		Vector2 mousePos = Input::mouse_position;
 		std::cout << mousePos.x << " " << mousePos.y<< std::endl;
 		if (start_racing) {
-			
 			if (start_racing->checkClick(mousePos.x, mousePos.y)) {
+				Audio::Stop(Game::instance->channel);
+				Game::instance->channel = Audio::Play("data/sounds/caster.wav");
 
+				Game::instance->play_scene->t.start();
+				Game::instance->current_scene = Game::instance->play_scene;
 			}
 			if (add_downforce->checkClick(mousePos.x, mousePos.y)) {
-
+				downforce += 0.1;
 			}
 			if (remove_downforce->checkClick(mousePos.x, mousePos.y)) {
-
+				downforce -= 0.1;
 			}
 			if (toggle_camera->checkClick(mousePos.x, mousePos.y)) {
-
+				first_person_camera = !first_person_camera;
 			}
 		}
 	}
@@ -662,5 +669,4 @@ void CarSetupScene::update(float dt) {
 	if (Input::gamepads[0].isButtonPressed(A_BUTTON)) {
 		Game::instance->current_scene = Game::instance->play_scene;
 	}
-
 }

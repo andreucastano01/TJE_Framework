@@ -124,16 +124,7 @@ CarEntity::CarEntity(std::string name, Vector3 position, Shader* shader, sSpeedP
 	rotation_speed = 0;
 }
 
-void CarEntity::move(int direction, int turn, float dt, Camera* camera) {
-	/*
-	Vector3& velocity = player->velocity;
-	Vector3 newDir = velocity.dot(collisionNormal);
-	newDir *= collisionNormal;
-
-	velocity.x -= newDir.x;
-	velocity.z -= newDir.z;
-	*/
-
+void CarEntity::move(int direction, int turn, float dt, Camera* camera, bool cameraView) {
 	//   forwards | backwards
 	Vector3 current_pos = model.getTranslation();
 	Matrix44 current_rot = model.getRotationOnly();
@@ -205,13 +196,19 @@ void CarEntity::move(int direction, int turn, float dt, Camera* camera) {
 	model.rotate(angle, Vector3(0, -1, 0));
 
 	//Camera
-	Vector3 camera_offset = Vector3(0, 10, -10.f); //Third person
-	//Vector3 camera_offset = Vector3(0, 0.79, -0.2f); //First person
+	Vector3 camera_offset;
+	if (cameraView)
+		camera_offset = Vector3(0, 0.79, -0.2f); //First person
+	else
+		camera_offset = Vector3(0, 10, -10.f); //Third person
+
 	Vector3 rotated_offset = rotation_matrix * camera_offset;
 	Vector3 camera_pos = current_pos + rotated_offset;
 	camera->eye = camera_pos;
-	camera->center = Vector3(current_pos.x, current_pos.y + 3, current_pos.z + 1); //Third person
-	//camera->center = Vector3(current_pos.x, current_pos.y + 0.76, current_pos.z); //First person
+	if(cameraView)
+		camera->center = Vector3(current_pos.x, current_pos.y + 0.76, current_pos.z); //First person
+	else
+		camera->center = Vector3(current_pos.x, current_pos.y + 3, current_pos.z + 1); //Third person
 	
 }
 
