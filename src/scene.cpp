@@ -609,9 +609,9 @@ void CarSetupScene::setupScene(int window_width, int window_height) {
 	camera->setPerspective(70.f, window_width / (float)window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
 
 	start_racing = new Button(window_width / 2, (window_height / 2) + 200, 100, 50, "Start!");
-	add_downforce = new Button((window_width / 2) + 75, window_height / 2, 100, 50, "More Downforce");
-	remove_downforce = new Button((window_width / 2) - 75, window_height / 2, 100, 50, "Less Downforce");
-	toggle_camera = new Button(window_width / 2, (window_height / 2)+100, 100, 50, "Change Camera");
+	add_downforce = new Button((window_width / 2) - 100, window_height / 2 - 60, 100, 50, "More Downforce");
+	remove_downforce = new Button((window_width / 2) - 100, window_height / 2, 100, 50, "Less Downforce");
+	toggle_camera = new Button(window_width / 2 - 100, (window_height / 2) + 100, 100, 50, "Change Camera");
 }
 
 void CarSetupScene::renderScene() {
@@ -632,7 +632,8 @@ void CarSetupScene::renderScene() {
 	ui->renderButton(remove_downforce);
 	ui->renderButton(toggle_camera);
 
-	drawText(window_width / 2 + 120, (window_height / 2), first_person_camera ? "first Person" : "third Person", Vector3(0), 1);
+	drawText(window_width / 2, (window_height / 2) - 50 , std::to_string(downforce), Vector3(0), 2);
+	drawText(window_width / 2, (window_height / 2) + 90, first_person_camera ? "first Person" : "third Person", Vector3(0), 2);
 	//if (SDL_NumJoysticks() > 0) drawText(240, 500, "Pulsa A para empezar", Vector3(1, 1, 1), 3);
 	//else drawText(250, 500, "Clica para empezar", Vector3(1, 1, 1), 3);
 }
@@ -653,10 +654,10 @@ void CarSetupScene::update(float dt) {
 				Game::instance->current_scene = Game::instance->play_scene;
 			}
 			if (add_downforce->checkClick(mousePos.x, mousePos.y)) {
-				downforce += 0.1;
+				if (downforce <= 1.5) downforce += 0.1;
 			}
 			if (remove_downforce->checkClick(mousePos.x, mousePos.y)) {
-				downforce -= 0.1;
+				if (downforce >= 0.5) downforce -= 0.1;
 			}
 			if (toggle_camera->checkClick(mousePos.x, mousePos.y)) {
 				first_person_camera = !first_person_camera;
