@@ -49,6 +49,10 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 
 	play_scene = new PlayScene(camera);
 	play_scene->setupScene(window_width, window_height);
+
+	car_setup_scene = new CarSetupScene(camera);
+	car_setup_scene->setupScene(window_width, window_height);
+
 	current_scene = intro_scene;
 
 	game_over = new GameOverScene(camera);
@@ -58,7 +62,7 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 	//minimapCamera.setPerspective(0, window_width, 0, window_height, 0.1f, 10000.f);
 	minimapCamera->setPerspective(70.f, window_width / (float)window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
 
-
+	channel = Audio::Play("data/sounds/theme.wav");
 	//hide the cursor
 	SDL_ShowCursor(!mouse_locked); //hide or show the mouse
 }
@@ -117,12 +121,17 @@ void Game::onMouseButtonDown( SDL_MouseButtonEvent event )
 		mouse_locked = !mouse_locked;
 		SDL_ShowCursor(!mouse_locked);
 	}
+	
+	if (event.button == SDL_BUTTON_LEFT && current_scene == car_setup_scene) {
+
+		if (false) {
+			current_scene = play_scene;
+			
+		}
+	}
 	if (event.button == SDL_BUTTON_LEFT && current_scene == intro_scene) {
 		if (event.x >= 0 && event.x <= window_width && event.y >= 0 && event.y <= window_height) {
-			current_scene = play_scene;
-			channel = Audio::Play("data/sounds/caster.wav");
-
-			play_scene->t.start();
+			current_scene = car_setup_scene;
 		}
 	}
 	if (event.button == SDL_BUTTON_LEFT && current_scene == game_over) {

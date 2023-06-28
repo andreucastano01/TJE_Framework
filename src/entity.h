@@ -104,7 +104,7 @@ public:
 	CarEntity(std::string name, Vector3 position, Shader* shader, sSpeedParameters speedParams, sTurningParameters tp, float scale = 1);
 	//direction: +1 accel forward -1 brake 0 no acceleration
 	//turn: +1 Turn left -1 Trun Right 0 no turn
-	void move(int direction, int turn, float dt, Camera* camera);
+	void move(int direction, int turn, float dt, Camera* camera, bool cameraView);
 	void render(Camera* camera);
 
 	inline float getSpeed() { return speed; }
@@ -112,6 +112,7 @@ public:
 	inline void goForwards() { is_reversing = false; }
 	inline std::string getGear() { return is_reversing ? "R": "1"; }
 	inline float getRotationSpeed() { return rotation_speed; }
+	inline void setDownforce(float df) { speedParams.downforce = df; }
 
 private:
 	sSpeedParameters speedParams;
