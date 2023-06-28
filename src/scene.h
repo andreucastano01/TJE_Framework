@@ -90,3 +90,18 @@ public:
 	void renderScene();
 	void update(float dt);
 };
+
+class GameOverScene : public Scene {
+public:
+	Shader* shader;
+	UI* ui;
+	float radius;
+	float angle;
+	CarEntity* car;
+
+	GameOverScene(Camera* camera);
+	void setupScene(int window_width, int window_height);
+	void renderScene();
+	void update(float dt);
+	void stopAudio();
+};
