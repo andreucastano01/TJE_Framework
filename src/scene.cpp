@@ -591,10 +591,8 @@ void IntroScene::update(float dt) {
 	camera->lookAt(Vector3(200 + radius * sin(angle), 15.0, 500 + radius * cos(angle)), Vector3(track_pos.x, track_pos.y, track_pos.z), Vector3(0.f, 1.f, 0.f));
 
 	if (Input::gamepads[0].isButtonPressed(A_BUTTON) && Game::instance->gamepadisPressed == false) {
-		Game::instance->current_scene = Game::instance->play_scene;
-		Game::instance->channel = Audio::Play("data/sounds/caster.wav");
-
-		Game::instance->play_scene->t.start();
+		Game::instance->gamepadisPressed = true;
+		Game::instance->current_scene = Game::instance->car_setup_scene;
 	}
 	if (!Input::gamepads[0].isButtonPressed(A_BUTTON)) 	Game::instance->gamepadisPressed = false;
 }
@@ -640,8 +638,10 @@ void GameOverScene::update(float dt) {
 		Game::instance->play_scene = new PlayScene(Game::instance->camera);
 		Game::instance->play_scene->setupScene(window_width, window_height);
 		Audio::Stop(channel);
+		Game::instance->channel = Audio::Play("data/sounds/theme.wav");
 		Game::instance->current_scene = Game::instance->intro_scene;
 	}
+	if (!Input::gamepads[0].isButtonPressed(A_BUTTON)) 	Game::instance->gamepadisPressed = false;
 }
 
 CarSetupScene::CarSetupScene(Camera* camera) : Scene(camera) {
@@ -720,9 +720,14 @@ void CarSetupScene::update(float dt) {
 	if (!Input::isMousePressed(SDL_BUTTON(1)))
 		oneClick = true;
 
-	if (Input::gamepads[0].isButtonPressed(A_BUTTON)) {
+	if (Input::gamepads[0].isButtonPressed(A_BUTTON) && Game::instance->gamepadisPressed == false) {
+		Game::instance->gamepadisPressed = true;
 		Game::instance->current_scene = Game::instance->play_scene;
+		Audio::Stop(Game::instance->channel);
+		Game::instance->channel = Audio::Play("data/sounds/caster.wav");
+		Game::instance->play_scene->t.start();
 	}
+	if (!Input::gamepads[0].isButtonPressed(A_BUTTON)) 	Game::instance->gamepadisPressed = false;
 }
 
 void GameOverScene::stopAudio() {

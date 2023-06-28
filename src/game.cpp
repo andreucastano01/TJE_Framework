@@ -125,8 +125,8 @@ void Game::onMouseButtonDown( SDL_MouseButtonEvent event )
 	if (event.button == SDL_BUTTON_LEFT && current_scene == car_setup_scene) {
 
 		if (false) {
+			channel = Audio::Stop(channel);
 			current_scene = play_scene;
-			
 		}
 	}
 	if (event.button == SDL_BUTTON_LEFT && current_scene == intro_scene) {
@@ -141,6 +141,7 @@ void Game::onMouseButtonDown( SDL_MouseButtonEvent event )
 			play_scene->setupScene(window_width, window_height);
 			current_scene = intro_scene;
 			game_over->stopAudio();
+			channel = Audio::Play("data/sounds/theme.wav");
 		}
 	}
 }
